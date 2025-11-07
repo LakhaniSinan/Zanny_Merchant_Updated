@@ -41,4 +41,6 @@ export const endPoints = {
   getSupportMessagesById: 'getSupportMessagesById',
   connectAccount: 'connectAccountMerchant',
   sendResetCodeMerchant: 'sendResetCodeMerchant',
+  getAllFoodCategories:"getAllFoodCategories",
+  getAllPortionSections:"getAllPortionSections",
 };

@@ -21,13 +21,20 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { handelGetProducts, setProducts } from '../../../redux/slices/Products';
 import OverLayLoader from '../../../components/loader';
+import { getAllFoodCategories } from '../../../services/foodCategories';
 const PostFood = ({ navigation }) => {
+
   const disptach = useDispatch();
   const postedProducts = useSelector(state => state.ProductSlice.products);
   const isLoading = useSelector(state => state.ProductSlice.loading);
   console.log(postedProducts, "postedProductspostedProductspostedProducts");
   const [searchVal, setSearchVal] = useState("");
+
   const [filteredProducts, setFilteredProducts] = useState([])
+  const [allNutritions, setAllNutritions] = useState([]);
+  const [selectedNutritions, setSelectedNutritions] = useState([]);
+  const [selectedNutrition, setSelectedNutrition] = useState(null);
+  const [nutritionAmount, setNutritionAmount] = useState("");
   // const [products, setProducts] = useState([])
   const ref = useRef();
 
@@ -86,91 +93,101 @@ const PostFood = ({ navigation }) => {
     }
   }
 
- 
+
+  useEffect(() => {
+    // alert("called");
+    getAllFoodCategories().then((res) => {
+      console.log(res, "RESSSSS");
+    }).catch(err => {
+      console.log(err, "errerrerr");
+    })
+  }, []);
+
+
 
   return (
     <>
-    <OverLayLoader isloading={isLoading}/>
-    <SafeAreaView style={styles.container}>
-      <Header text="Food" drawer={true} />
-      <View style={styles.inputStyle}>
-        <TextInput placeholder="Search Food"
-          style={{ color: colors.gray4}}
-          value={searchVal}
-          onChangeText={(e) => searchFood(e)}
-          placeholderTextColor={colors.gray4}
-        />
-        <AntDesign
-          name="search1"
-          color={colors.yellow}
-          size={20}
-          style={{ marginRight: width(1) }}
-        />
-      </View>
-      {filteredProducts?.length > 0 ?
-        <FlatList
-         data={filteredProducts}
-         onRefresh={()=>disptach(handelGetProducts("PostScreen"))}
-         refreshing={isLoading}
-         renderItem={({item,index})=>{
-          return(
-            <View key={index} style={{ marginVertical: width(3),paddingVertical:width(2) }}>
+      <OverLayLoader isloading={isLoading} />
+      <SafeAreaView style={styles.container}>
+        <Header text="Food" drawer={true} />
+        <View style={styles.inputStyle}>
+          <TextInput placeholder="Search Food"
+            style={{ color: colors.gray4 }}
+            value={searchVal}
+            onChangeText={(e) => searchFood(e)}
+            placeholderTextColor={colors.gray4}
+          />
+          <AntDesign
+            name="search1"
+            color={colors.yellow}
+            size={20}
+            style={{ marginRight: width(1) }}
+          />
+        </View>
+        {filteredProducts?.length > 0 ?
+          <FlatList
+            data={filteredProducts}
+            onRefresh={() => disptach(handelGetProducts("PostScreen"))}
+            refreshing={isLoading}
+            renderItem={({ item, index }) => {
+              return (
+                <View key={index} style={{ marginVertical: width(3), paddingVertical: width(2) }}>
+                  <TouchableOpacity
+                    style={{ marginHorizontal: 10 }}
+                    onPress={() => navigateToDetail(item)}>
+                    <FoodImages imageUrl={item.image} />
+                    <View>
+                      <Text style={styles.txt}>{item.name}</Text>
+                      <Text style={styles.priceTypo}>Price £{item.price}</Text>
+                      {item.discount > 0 &&
+                        <Text style={styles.priceTypo}>After Discount Price £{item.discount}</Text>
+                      }
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              )
+            }}
+          />
+          :
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: "center" }}>
+            <Text
+              style={{
+                fontWeight: 'bold',
+                fontSize: 16,
+                marginBottom: width(2),
+                color: 'black',
+                textAlign: 'center',
+              }}>
+              No products found
+            </Text>
+          </View>
+        }
+        <View style={{ marginVertical: width(1.5) }}>
+          <View
+            style={{
+              position: 'absolute',
+              bottom: 10,
+              right: 5,
+              marginHorizontal: width(2),
+            }}>
             <TouchableOpacity
-              style={{ marginHorizontal: 10 }}
-              onPress={() => navigateToDetail(item)}>
-              <FoodImages imageUrl={item.image} />
-              <View>
-                <Text style={styles.txt}>{item.name}</Text>
-                <Text style={styles.priceTypo}>Price £{item.price}</Text>
-                {item.discount > 0 &&
-                  <Text style={styles.priceTypo}>After Discount Price £{item.discount}</Text>
-                }
-              </View>
+              style={{
+                backgroundColor: colors.yellow,
+                borderRadius: 30,
+                padding: width(3),
+                alignItems: 'center',
+              }}
+              onPress={handleAddEditFood}
+            >
+              <AntDesign
+                name="plus"
+                size={25}
+                color={'#ffff'}
+              />
             </TouchableOpacity>
           </View>
-          )
-         }}
-        />
-        :
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: "center" }}>
-          <Text
-            style={{
-              fontWeight: 'bold',
-              fontSize: 16,
-              marginBottom: width(2),
-              color: 'black',
-              textAlign: 'center',
-            }}>
-            No products found
-          </Text>
         </View>
-      }
-      <View style={{ marginVertical: width(1.5) }}>
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 10,
-            right: 5,
-            marginHorizontal: width(2),
-          }}>
-          <TouchableOpacity
-            style={{
-              backgroundColor: colors.yellow,
-              borderRadius: 30,
-              padding: width(3),
-              alignItems: 'center',
-            }}
-            onPress={handleAddEditFood}
-          >
-            <AntDesign
-              name="plus"
-              size={25}
-              color={'#ffff'}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
     </>
 
   );
@@ -179,7 +196,7 @@ const PostFood = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor:colors.white,
+    backgroundColor: colors.white,
   },
   imageStyles: {
     height: width(40),
@@ -213,7 +230,7 @@ const styles = StyleSheet.create({
   },
   inputStyle: {
     borderRadius: 5,
-    borderWidth:0.2,
+    borderWidth: 0.2,
 
     marginVertical: width(2),
     marginHorizontal: width(3),

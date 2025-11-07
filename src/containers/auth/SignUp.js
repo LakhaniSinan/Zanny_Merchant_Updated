@@ -91,7 +91,7 @@ const SignUp = ({navigation}) => {
   };
 
   const getImage = (image, type) => {
-    console.log('called');
+    // console.log('called');
     setInputValue({
       ...inputValue,
       [type]: image,

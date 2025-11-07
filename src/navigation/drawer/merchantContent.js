@@ -22,7 +22,7 @@ function DrawerContent(props) {
     'Profile',
     'Pickup Orders',
     'Delivery Orders',
-    'Food Categories',
+    // 'Food Categories',
     'Private Hire',
     'Payment History',
     'FAQs',

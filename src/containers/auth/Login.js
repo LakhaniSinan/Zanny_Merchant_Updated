@@ -111,6 +111,8 @@ const Login = ({navigation}) => {
       loginMerchant(payload)
         .then(response => {
           if (response?.data?.status == 'ok') {
+            console.log(response?.data?.data?.userDetails,"esponse?.data?.data?.userDetails?");
+            
             if (response?.data?.data?.userDetails?.isApprove == true) {
               setInputValue({
                 email: '',
@@ -124,7 +126,7 @@ const Login = ({navigation}) => {
               disptach(setUserData(newObj));
               setIsLoading(false);
             } else {
-              alert('You are not approved please conatct andmin');
+              alert('You are not approved please conatct admin');
               setIsLoading(false);
             }
           } else {

@@ -25,6 +25,7 @@ const Navigation = () => {
     data = JSON.parse(data);
     disptach(setUserData(data));
   };
+console.log(state,'"datadatadatadatadata');
 
   if (isloading) {
     return (
