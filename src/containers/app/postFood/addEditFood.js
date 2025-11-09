@@ -71,6 +71,7 @@ const AddEditFood = ({ route }) => {
       });
       setSelectedNutritions(data?.nutritions || []);
       setIsOnline(data?.isShow);
+      setAvailibilityType(data?.foodType)
     }
   }, []);
 
@@ -219,7 +220,8 @@ const AddEditFood = ({ route }) => {
       nutritions: selectedNutritions,
       foodType: availibilityType
     };
-    console.log(payload, '{AYLOADD');
+    console.log(payload, 'PAYLOODD');
+    // return
     if (type == 'edit') {
       if (name == '') {
         alert('Name is required');

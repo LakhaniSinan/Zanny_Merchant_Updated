@@ -43,4 +43,5 @@ export const endPoints = {
   sendResetCodeMerchant: 'sendResetCodeMerchant',
   getAllFoodCategories:"getAllFoodCategories",
   getAllPortionSections:"getAllPortionSections",
+  getSettings:"getSettings",
 };

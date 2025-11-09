@@ -9,6 +9,8 @@ import AccountInformation from '../containers/app/profile/accountInformation';
 import ConnectAccount from '../containers/app/profile/connectAccount';
 import Support from '../containers/app/support';
 import AddSupportMsg from '../containers/app/support/addSupportMsg';
+import DeliveryScreen from '../containers/app/profile/delivery';
+import merchantTimmings from '../containers/app/profile/merchantTimming';
 const Stack = createStackNavigator();
 
 function ProfileStack() {
@@ -76,6 +78,20 @@ function ProfileStack() {
         }}
         name="ConnectAccount"
         component={ConnectAccount}
+      />
+       <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+        name="deliveryTime"
+        component={DeliveryScreen}
+      />
+       <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+        name="merchantTimmings"
+        component={merchantTimmings}
       />
     </Stack.Navigator>
   );
