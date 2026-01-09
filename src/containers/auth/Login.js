@@ -111,8 +111,11 @@ const Login = ({navigation}) => {
       loginMerchant(payload)
         .then(response => {
           if (response?.data?.status == 'ok') {
-            console.log(response?.data?.data?.userDetails,"esponse?.data?.data?.userDetails?");
-            
+            console.log(
+              response?.data?.data?.userDetails,
+              'esponse?.data?.data?.userDetails?',
+            );
+
             if (response?.data?.data?.userDetails?.isApprove == true) {
               setInputValue({
                 email: '',
@@ -145,53 +148,60 @@ const Login = ({navigation}) => {
     <SafeAreaView style={{flex: 1, backgroundColor: colors.white}}>
       <Header text={'Sign In'} />
       <View style={{alignItems: 'center', marginTop: width(3)}}>
-        <Text style={{fontSize: 24, fontWeight: '600', color: colors.gray4}}>
+        <Text style={{fontSize: 24, fontWeight: '600', color: colors.redish}}>
           Zanny Merchant
         </Text>
       </View>
-      <View style={{marginTop: width(5)}}>
+      <View style={{padding: width(3)}}>
         <Text
           style={{
-            marginTop: width(2),
             paddingHorizontal: width(2),
-            color: colors.gray4,
+            color: colors.redish,
+            marginBottom: width(3),
           }}>
-          Email
+          Enter Your Email
         </Text>
         <View
           style={{
-            borderBottomWidth: 0.5,
+            borderWidth: 0.5,
             borderColor: colors.grey,
+            borderRadius: width(100),
+            paddingVertical: width(2),
+            paddingHorizontal: width(3),
+            height: width(15),
           }}>
           <TextInput
-            style={{margin: width(2), color: colors.black}}
+            style={{flex: 1, color: colors.redish}}
             placeholder="Enter your email"
             value={inputValue.email}
-            onChangeText={newText => handleChangeText('email', newText)}
+            onChangeText={value => handleChangeText('email', value)}
             placeholderTextColor={colors.gray4}
           />
         </View>
+      </View>
+      <View style={{padding: width(3)}}>
         <Text
           style={{
-            marginTop: width(5),
             paddingHorizontal: width(2),
-            color: colors.gray4,
+            color: colors.redish,
+            marginBottom: width(3),
           }}>
-          Password
+          Enter Your Password
         </Text>
         <View
           style={{
-            borderBottomWidth: 0.5,
+            borderRadius: 100,
+            borderWidth: 0.5,
             borderColor: colors.grey,
             marginTop: width(2),
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            paddingRight: width(4),
+            paddingHorizontal: width(4),
           }}>
           <View style={{width: '90%'}}>
             <TextInput
-              style={{margin: width(2), color: colors.black}}
+              style={{margin: width(2), color: colors.black, fontSize: 16}}
               placeholder="Enter your password"
               secureTextEntry={isSecure}
               value={inputValue.password}
@@ -207,6 +217,7 @@ const Login = ({navigation}) => {
           />
         </View>
       </View>
+
       <View
         style={{
           marginTop: width(5),
@@ -225,7 +236,7 @@ const Login = ({navigation}) => {
               fontSize: 16,
               textDecorationLine: 'underline',
               fontWeight: '600',
-              color: colors.gray4,
+              color: colors.redish,
             }}>
             Register Here
           </Text>
@@ -243,13 +254,13 @@ const Login = ({navigation}) => {
               fontSize: 16,
               textDecorationLine: 'underline',
               fontWeight: '600',
-              color: colors.gray4,
+              color: colors.redish,
             }}>
             Forgot Password
           </Text>
         </TouchableOpacity>
         {isLoading ? (
-          <ActivityIndicator size={'large'} color={colors.yellow} />
+          <ActivityIndicator size={'large'} color={colors.redish} />
         ) : (
           <Button heading={'Sign In'} onPress={onPress} />
         )}

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Picker } from '@react-native-picker/picker';
-import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useRef, useState } from 'react';
+import {Picker} from '@react-native-picker/picker';
+import {useNavigation} from '@react-navigation/native';
+import React, {useEffect, useRef, useState, version} from 'react';
 import {
   Alert,
   SafeAreaView,
@@ -10,15 +10,18 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { height, width } from 'react-native-dimension';
-import { ScrollView } from 'react-native-gesture-handler';
-import { useDispatch } from 'react-redux';
+import {height, width} from 'react-native-dimension';
+import {ScrollView} from 'react-native-gesture-handler';
+import {useDispatch} from 'react-redux';
 import AllergyModal from '../../../components/allergyModal';
 import ImagePicker from '../../../components/imagepicker';
 import OverLayLoader from '../../../components/loader';
-import { handelGetProducts } from '../../../redux/slices/Products';
-import { getAllAllergies } from '../../../services/allergies';
-import { getAllFoodCategories, getFoodCategoriesById } from '../../../services/foodCategories';
+import {handelGetProducts} from '../../../redux/slices/Products';
+import {getAllAllergies} from '../../../services/allergies';
+import {
+  getAllFoodCategories,
+  getFoodCategoriesById,
+} from '../../../services/foodCategories';
 import {
   addProduct,
   deleteProduct,
@@ -27,15 +30,15 @@ import {
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Button from './../../../components/button/index';
 import Header from './../../../components/header/index';
-import { colors } from './../../../constants/index';
-import { getAllNutritions } from '../../../services/nutritions';
+import {colors} from './../../../constants/index';
+import {getAllNutritions} from '../../../services/nutritions';
 
-const AddEditFood = ({ route }) => {
+const AddEditFood = ({route}) => {
   const ref = useRef();
 
   const dispatch = useDispatch();
   const [online, setIsOnline] = useState(true);
-  const { type, data, allergiesData } = route.params;
+  const {type, data, allergiesData} = route.params;
   const [userDetails, setUserDetails] = useState({});
   const [isloading, setIsLoading] = useState(false);
   const [allAllergies, setAllAllergies] = useState([]);
@@ -43,7 +46,7 @@ const AddEditFood = ({ route }) => {
   const [allNutritions, setAllNutritions] = useState([]);
   const [selectedNutritions, setSelectedNutritions] = useState([]);
   const [selectedNutrition, setSelectedNutrition] = useState(null);
-  const [nutritionAmount, setNutritionAmount] = useState("");
+  const [nutritionAmount, setNutritionAmount] = useState('');
   const [availibilityType, setAvailibilityType] = useState('pickup');
   const [inputValue, setInputValue] = useState({
     name: '',
@@ -56,7 +59,7 @@ const AddEditFood = ({ route }) => {
 
   const navgation = useNavigation();
 
-  console.log(data, "datadatadatadata");
+  console.log(data, 'datadatadatadata');
 
   useEffect(() => {
     getUserDetails();
@@ -71,27 +74,28 @@ const AddEditFood = ({ route }) => {
       });
       setSelectedNutritions(data?.nutritions || []);
       setIsOnline(data?.isShow);
-      setAvailibilityType(data?.foodType)
+      setAvailibilityType(data?.foodType);
     }
   }, []);
 
   useEffect(() => {
     handleGetAllergies();
     getAllNutritions().then(res => {
-      console.log(res, "resresres=>>>nutritions");
+      console.log(res, 'resresres=>>>nutritions');
       setAllNutritions(res.data.data); // make sure API returns [{id,name}] format
     });
   }, []);
 
   useEffect(() => {
-    getAllFoodCategories().then((res) => {
-      // console.log(res, "RESSSSS");
-      setAllCategories(res?.data?.data);
-    }).catch(err => {
-      console.log(err, "errerrerr");
-    })
+    getAllFoodCategories()
+      .then(res => {
+        // console.log(res, "RESSSSS");
+        setAllCategories(res?.data?.data);
+      })
+      .catch(err => {
+        console.log(err, 'errerrerr');
+      });
   }, []);
-
 
   const handleGetAllergies = () => {
     setIsLoading(true);
@@ -142,7 +146,7 @@ const AddEditFood = ({ route }) => {
   };
 
   const handleChangeText = (name, value) => {
-    setInputValue({ ...inputValue, [name]: value });
+    setInputValue({...inputValue, [name]: value});
   };
 
   const handlegetCategories = async () => {
@@ -158,7 +162,7 @@ const AddEditFood = ({ route }) => {
         } else {
         }
       })
-      .catch(error => { });
+      .catch(error => {});
   };
 
   const handleChangeStatus = async () => {
@@ -190,7 +194,7 @@ const AddEditFood = ({ route }) => {
         onPress: () => console.log('Cancel Pressed'),
         style: 'cancel',
       },
-      { text: 'OK', onPress: () => handleDeleteProduct() },
+      {text: 'OK', onPress: () => handleDeleteProduct()},
     ]);
   };
   const handleAddEditProduct = () => {
@@ -200,12 +204,11 @@ const AddEditFood = ({ route }) => {
         temp.push(item);
       }
     });
-    const { name, price, discount, description, category, image } = inputValue;
+    const {name, price, discount, description, category, image} = inputValue;
 
-    let catId = allCategories.find(cat => cat.name === category)?._id || null
+    let catId = allCategories.find(cat => cat.name === category)?._id || null;
 
-    console.log(inputValue, catId, "INNNNN");
-
+    console.log(inputValue, catId, 'INNNNN');
 
     let payload = {
       name,
@@ -218,7 +221,7 @@ const AddEditFood = ({ route }) => {
       allergiesData: temp,
       categoryId: catId,
       nutritions: selectedNutritions,
-      foodType: availibilityType
+      foodType: availibilityType,
     };
     console.log(payload, 'PAYLOODD');
     // return
@@ -311,26 +314,25 @@ const AddEditFood = ({ route }) => {
           alert(response?.data?.message);
         }
       })
-      .catch(error => { });
+      .catch(error => {});
   };
 
   const onPressOut = item => {
     setAllAllergies(item);
   };
 
-  console.log(selectedNutritions, "SS");
-
+  console.log(selectedNutritions, 'SS');
 
   return (
     <>
       <OverLayLoader isloading={isloading} />
       <AllergyModal ref={ref} />
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }}>
+      <SafeAreaView style={{flex: 1, backgroundColor: colors.white}}>
         <ScrollView
           automaticallyAdjustKeyboardInsets
-          style={{ backgroundColor: 'white' }}
-          resetScrollToCoords={{ x: 0, y: 0 }}
-          contentContainerStyle={{ flex: 1 }}
+          style={{backgroundColor: 'white'}}
+          resetScrollToCoords={{x: 0, y: 0}}
+          contentContainerStyle={{flex: 1}}
           scrollEnabled={false}>
           {type == 'add' ? (
             <Header goBack text="Post Food" />
@@ -345,7 +347,7 @@ const AddEditFood = ({ route }) => {
           )}
           <ScrollView
             showsVerticalScrollIndicator={false}
-            style={{ marginBottom: width(5), marginHorizontal: width(3) }}>
+            style={{marginBottom: width(5), marginHorizontal: width(3)}}>
             <ImagePicker
               subtext={'Upload Product Image'}
               viewStyle={{
@@ -371,7 +373,7 @@ const AddEditFood = ({ route }) => {
               }}
             />
             <View style={{}}>
-              <Text style={{ paddingHorizontal: width(2), color: colors.black }}>
+              <Text style={{paddingHorizontal: width(2), color: colors.black}}>
                 Name
               </Text>
               <View
@@ -380,7 +382,7 @@ const AddEditFood = ({ route }) => {
                   borderColor: colors.grey,
                 }}>
                 <TextInput
-                  style={{ margin: width(2), color: colors.black }}
+                  style={{margin: width(2), color: colors.black}}
                   placeholder="Food Name"
                   value={inputValue.name}
                   onChangeText={newText => handleChangeText('name', newText)}
@@ -415,8 +417,8 @@ const AddEditFood = ({ route }) => {
                 }}>
                 <Picker
                   dropdownIconColor={'black'}
-                  style={{ width: '100%', fontSize: 13 }}
-                  itemStyle={{ backgroundColor: 'white', fontSize: 13 }}
+                  style={{width: '100%', fontSize: 13}}
+                  itemStyle={{backgroundColor: 'white', fontSize: 13}}
                   selectedValue={inputValue?.category}
                   onValueChange={newText =>
                     handleChangeText('category', newText)
@@ -438,102 +440,128 @@ const AddEditFood = ({ route }) => {
                 </Picker>
               </View>
 
-              <View style={{ marginHorizontal: 15, marginTop: 10 }}>
-                <Text style={{ fontSize: 16, fontWeight: '600', color: 'black' }}>
+              <View style={{marginTop: 10}}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: '600',
+                    color: colors.redish,
+                  }}>
                   Add Nutrition
                 </Text>
 
-                {/* Dropdown / Picker */}
                 <View
                   style={{
                     borderWidth: 1,
                     borderColor: colors.gray4,
                     marginTop: 8,
-                    borderRadius: 6,
-                    padding: 10
+                    borderRadius: 100,
+                    paddingHorizontal: width(3),
                   }}>
                   <Picker
                     selectedValue={selectedNutrition?.name}
-                    onValueChange={(value) => {
-                      const selected = allNutritions.find(n => n.name === value);
+                    onValueChange={value => {
+                      const selected = allNutritions.find(
+                        n => n.name === value,
+                      );
                       setSelectedNutrition(selected);
-                    }}
-                  >
-                    <Picker.Item label="Select nutrition" value={null} />
+                    }}>
+                    <Picker.Item
+                      label="Select nutrition"
+                      value={null}
+                      style={{color: colors.redish}}
+                    />
                     {allNutritions.map((item, index) => (
-                      <Picker.Item label={item.name} value={item.name} key={index} />
+                      <Picker.Item
+                        label={item.name}
+                        value={item.name}
+                        key={index}
+                        style={{color: colors.black}}
+                      />
                     ))}
                   </Picker>
                 </View>
                 {/* Input amount */}
-                <TextInput
-                  placeholder="Enter amount (ex: 45)"
-                  value={nutritionAmount}
-                  onChangeText={setNutritionAmount}
-                  keyboardType="numeric"
+                <View
                   style={{
+                    marginTop: width(3),
+                    borderRadius: 100,
                     borderWidth: 1,
                     borderColor: colors.gray4,
-                    borderRadius: 6,
-                    padding: 10,
-                    marginTop: 10,
-                    color: "black"
-                  }}
-                />
+                    paddingVertical: width(1.5),
+                    paddingHorizontal: width(4),
+                  }}>
+                  <TextInput
+                    placeholder="Enter amount (ex: 45)"
+                    placeholderTextColor={colors.gray4}
+                    value={nutritionAmount}
+                    onChangeText={setNutritionAmount}
+                    keyboardType="numeric"
+                    style={{
+                      flex: 1,
+                      color: colors.redish,
+                    }}
+                  />
+                </View>
 
                 <TouchableOpacity
                   style={{
                     marginTop: 10,
-                    backgroundColor: colors.yellow,
-                    padding: 10,
-                    borderRadius: 6,
-                    alignItems: 'center'
+                    backgroundColor: colors.redish,
+                    paddingVertical: 15,
+                    borderRadius: 100,
+                    alignItems: 'center',
                   }}
                   onPress={() => {
                     if (!selectedNutrition || !nutritionAmount) return;
-                    setSelectedNutritions(prev => [...prev, {
-                      name: selectedNutrition.name,
-                      amount: Number(nutritionAmount)
-                    }]);
+                    setSelectedNutritions(prev => [
+                      ...prev,
+                      {
+                        name: selectedNutrition.name,
+                        amount: Number(nutritionAmount),
+                      },
+                    ]);
                     setSelectedNutrition(null);
-                    setNutritionAmount("");
-                  }}
-                >
-                  <Text style={{ color: "white", fontWeight: "600" }}>Add Nutrition</Text>
+                    setNutritionAmount('');
+                  }}>
+                  <Text style={{color: 'white', fontWeight: '600'}}>
+                    Add Nutrition
+                  </Text>
                 </TouchableOpacity>
               </View>
 
-              <View style={{ marginTop: 15, marginHorizontal: 15 }}>
+              <View style={{marginTop: 15, marginHorizontal: 15}}>
                 {selectedNutritions.map((nutri, index) => (
                   <View
                     key={index}
                     style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
                       paddingVertical: 6,
                       borderBottomWidth: 0.5,
-                    }}
-                  >
-                    <Text style={{ color: 'black' }}>{nutri.name}</Text>
+                    }}>
+                    <Text style={{color: 'black'}}>{nutri.name}</Text>
 
-                    <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <Text style={{ color: 'black', marginRight: 10 }}>{nutri.amount} g</Text>
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                      <Text style={{color: 'black', marginRight: 10}}>
+                        {nutri.amount} g
+                      </Text>
 
                       {/* Delete Button */}
                       <TouchableOpacity
                         onPress={() => {
-                          const updated = selectedNutritions.filter((_, i) => i !== index);
+                          const updated = selectedNutritions.filter(
+                            (_, i) => i !== index,
+                          );
                           setSelectedNutritions(updated);
-                        }}
-                      >
+                        }}>
                         <AntDesign name="delete" size={18} color="red" />
                       </TouchableOpacity>
                     </View>
                   </View>
                 ))}
               </View>
-
 
               <Text
                 style={{
@@ -619,8 +647,10 @@ const AddEditFood = ({ route }) => {
               </View>
             </View>
 
-            <View style={{ marginVertical: width(4) }}>
-              <Text style={{ fontWeight: "bold", fontSize: 16 }}>Food Availability </Text>
+            <View style={{marginVertical: width(4)}}>
+              <Text style={{fontWeight: 'bold', fontSize: 16}}>
+                Food Availability{' '}
+              </Text>
             </View>
 
             <View
@@ -631,24 +661,18 @@ const AddEditFood = ({ route }) => {
               }}>
               <Picker
                 dropdownIconColor={'black'}
-                style={{ width: '100%', fontSize: 13 }}
-                itemStyle={{ backgroundColor: 'white', fontSize: 13 }}
+                style={{width: '100%', fontSize: 13}}
+                itemStyle={{backgroundColor: 'white', fontSize: 13}}
                 selectedValue={availibilityType}
-                onValueChange={newText =>
-                  setAvailibilityType(newText)
-                }>
+                onValueChange={newText => setAvailibilityType(newText)}>
                 <Picker.Item
                   label="Please select availability type"
                   value={''}
                   color="black"
                 />
-                {["pickup","delivery","both"].map((item, ind) => {
+                {['pickup', 'delivery', 'both'].map((item, ind) => {
                   return (
-                    <Picker.Item
-                      label={item}
-                      value={item}
-                      color="black"
-                    />
+                    <Picker.Item label={item} value={item} color="black" />
                   );
                 })}
               </Picker>

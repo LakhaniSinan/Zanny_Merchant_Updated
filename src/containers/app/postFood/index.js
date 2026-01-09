@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   StyleSheet,
   View,
@@ -10,46 +10,42 @@ import {
   FlatList,
 } from 'react-native';
 import Header from './../../../components/header/index';
-import { width } from 'react-native-dimension';
-import { ScrollView } from 'react-native-gesture-handler';
-import { colors } from './../../../constants/index';
+import {width} from 'react-native-dimension';
+import {ScrollView} from 'react-native-gesture-handler';
+import {colors} from './../../../constants/index';
 import FoodImages from './foodImages';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getProduct } from '../../../services/product';
-import { useFocusEffect } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
-import { handelGetProducts, setProducts } from '../../../redux/slices/Products';
+import {getProduct} from '../../../services/product';
+import {useFocusEffect} from '@react-navigation/native';
+import {useDispatch, useSelector} from 'react-redux';
+import {handelGetProducts, setProducts} from '../../../redux/slices/Products';
 import OverLayLoader from '../../../components/loader';
-import { getAllFoodCategories } from '../../../services/foodCategories';
-const PostFood = ({ navigation }) => {
-
+import {getAllFoodCategories} from '../../../services/foodCategories';
+const PostFood = ({navigation}) => {
   const disptach = useDispatch();
   const postedProducts = useSelector(state => state.ProductSlice.products);
   const isLoading = useSelector(state => state.ProductSlice.loading);
-  console.log(postedProducts, "postedProductspostedProductspostedProducts");
-  const [searchVal, setSearchVal] = useState("");
+  console.log(postedProducts, 'postedProductspostedProductspostedProducts');
+  const [searchVal, setSearchVal] = useState('');
 
-  const [filteredProducts, setFilteredProducts] = useState([])
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [allNutritions, setAllNutritions] = useState([]);
   const [selectedNutritions, setSelectedNutritions] = useState([]);
   const [selectedNutrition, setSelectedNutrition] = useState(null);
-  const [nutritionAmount, setNutritionAmount] = useState("");
+  const [nutritionAmount, setNutritionAmount] = useState('');
   // const [products, setProducts] = useState([])
   const ref = useRef();
 
-
-  console.log(filteredProducts, "filteredProductsfilteredProducts");
-
+  console.log(filteredProducts, 'filteredProductsfilteredProducts');
 
   useEffect(() => {
-    disptach(handelGetProducts("PostScreen"))
-  }, [])
+    disptach(handelGetProducts('PostScreen'));
+  }, []);
 
   useEffect(() => {
-    setFilteredProducts(postedProducts)
-  }, [postedProducts])
-
+    setFilteredProducts(postedProducts);
+  }, [postedProducts]);
 
   // useFocusEffect(
   //   React.useCallback(() => {
@@ -60,7 +56,6 @@ const PostFood = ({ navigation }) => {
   //   }, [searchVal]),
   // );
 
-
   const handleAddEditFood = () => {
     navigation.navigate('AddEditFood', {
       type: 'add',
@@ -68,7 +63,7 @@ const PostFood = ({ navigation }) => {
   };
 
   const navigateToDetail = val => {
-    console.log(val.allergiesData[0], "valvalvalvalval");
+    console.log(val.allergiesData[0], 'valvalvalvalval');
     navigation.navigate('AddEditFood', {
       data: val,
       type: 'edit',
@@ -76,34 +71,30 @@ const PostFood = ({ navigation }) => {
     });
   };
 
-
-
-  const searchFood = (val) => {
-    if (val == "") {
-      setSearchVal("")
-      setFilteredProducts(postedProducts)
-    }
-    else {
+  const searchFood = val => {
+    if (val == '') {
+      setSearchVal('');
+      setFilteredProducts(postedProducts);
+    } else {
       let filterArray = postedProducts.filter(item => {
         return item?.name?.toLowerCase().includes(val.toLowerCase());
       });
-      setSearchVal(val)
-      console.log(filterArray, "filterArrayfilterArrayfilterArray");
+      setSearchVal(val);
+      console.log(filterArray, 'filterArrayfilterArrayfilterArray');
       setFilteredProducts(filterArray);
     }
-  }
-
+  };
 
   useEffect(() => {
     // alert("called");
-    getAllFoodCategories().then((res) => {
-      console.log(res, "RESSSSS");
-    }).catch(err => {
-      console.log(err, "errerrerr");
-    })
+    getAllFoodCategories()
+      .then(res => {
+        console.log(res, 'RESSSSS');
+      })
+      .catch(err => {
+        console.log(err, 'errerrerr');
+      });
   }, []);
-
-
 
   return (
     <>
@@ -111,45 +102,49 @@ const PostFood = ({ navigation }) => {
       <SafeAreaView style={styles.container}>
         <Header text="Food" drawer={true} />
         <View style={styles.inputStyle}>
-          <TextInput placeholder="Search Food"
-            style={{ color: colors.gray4 }}
+          <TextInput
+            placeholder="Search Food"
+            style={{color: colors.redish, borderRadius: 100}}
             value={searchVal}
-            onChangeText={(e) => searchFood(e)}
+            onChangeText={e => searchFood(e)}
             placeholderTextColor={colors.gray4}
           />
           <AntDesign
             name="search1"
-            color={colors.yellow}
+            color={colors.redish}
             size={20}
-            style={{ marginRight: width(1) }}
+            style={{marginRight: width(1)}}
           />
         </View>
-        {filteredProducts?.length > 0 ?
+        {filteredProducts?.length > 0 ? (
           <FlatList
             data={filteredProducts}
-            onRefresh={() => disptach(handelGetProducts("PostScreen"))}
+            onRefresh={() => disptach(handelGetProducts('PostScreen'))}
             refreshing={isLoading}
-            renderItem={({ item, index }) => {
+            renderItem={({item, index}) => {
               return (
-                <View key={index} style={{ marginVertical: width(3), paddingVertical: width(2) }}>
+                <View key={index} style={{paddingVertical: width(2)}}>
                   <TouchableOpacity
-                    style={{ marginHorizontal: 10 }}
+                    style={{marginHorizontal: 10}}
                     onPress={() => navigateToDetail(item)}>
                     <FoodImages imageUrl={item.image} />
                     <View>
                       <Text style={styles.txt}>{item.name}</Text>
                       <Text style={styles.priceTypo}>Price £{item.price}</Text>
-                      {item.discount > 0 &&
-                        <Text style={styles.priceTypo}>After Discount Price £{item.discount}</Text>
-                      }
+                      {item.discount > 0 && (
+                        <Text style={styles.priceTypo}>
+                          After Discount Price £{item.discount}
+                        </Text>
+                      )}
                     </View>
                   </TouchableOpacity>
                 </View>
-              )
+              );
             }}
           />
-          :
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: "center" }}>
+        ) : (
+          <View
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
             <Text
               style={{
                 fontWeight: 'bold',
@@ -161,8 +156,8 @@ const PostFood = ({ navigation }) => {
               No products found
             </Text>
           </View>
-        }
-        <View style={{ marginVertical: width(1.5) }}>
+        )}
+        <View style={{marginVertical: width(1.5)}}>
           <View
             style={{
               position: 'absolute',
@@ -172,24 +167,18 @@ const PostFood = ({ navigation }) => {
             }}>
             <TouchableOpacity
               style={{
-                backgroundColor: colors.yellow,
+                backgroundColor: colors.redish,
                 borderRadius: 30,
                 padding: width(3),
                 alignItems: 'center',
               }}
-              onPress={handleAddEditFood}
-            >
-              <AntDesign
-                name="plus"
-                size={25}
-                color={'#ffff'}
-              />
+              onPress={handleAddEditFood}>
+              <AntDesign name="plus" size={25} color={'#ffff'} />
             </TouchableOpacity>
           </View>
         </View>
       </SafeAreaView>
     </>
-
   );
 };
 
@@ -229,18 +218,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   inputStyle: {
-    borderRadius: 5,
+    borderRadius: 100,
     borderWidth: 0.2,
 
-    marginVertical: width(2),
+    marginVertical: width(3),
     marginHorizontal: width(3),
     backgroundColor: colors.white,
-    paddingHorizontal: width(1),
-    paddingVertical: width(2),
+    paddingHorizontal: width(4),
+    paddingVertical: width(1),
     color: colors.gray4,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between"
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 });
 

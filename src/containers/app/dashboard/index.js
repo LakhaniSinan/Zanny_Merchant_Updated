@@ -235,6 +235,9 @@ const Dashboard = ({navigation}) => {
           open={showPickerStart}
           title="Select Start Date"
           date={startdate}
+          style={{
+            borderRadius: width(2),
+          }}
           onConfirm={date => {
             setShowPickerStart(false);
             setStartDate(date);
@@ -308,7 +311,7 @@ const Dashboard = ({navigation}) => {
                 <View style={styles.countContainer}>
                   <FontAwesome5
                     name="calendar"
-                    color={colors.white}
+                    color={colors.black}
                     size={30}
                   />
                   <Text style={styles.cardCount}>
@@ -329,7 +332,7 @@ const Dashboard = ({navigation}) => {
                 <View style={styles.countContainer}>
                   <FontAwesome5
                     name="calendar"
-                    color={colors.white}
+                    color={colors.black}
                     size={30}
                   />
                   <Text style={styles.cardCount}>
@@ -344,7 +347,7 @@ const Dashboard = ({navigation}) => {
                 onPress={() => navigation.navigate('Food')}>
                 <Text style={styles.cardTitle}>Total Products</Text>
                 <View style={styles.countContainer}>
-                  <FontAwesome5 name="poll" color={colors.white} size={30} />
+                  <FontAwesome5 name="poll" color={colors.black} size={30} />
                   <Text style={styles.cardCount}>
                     {dashboardData?.totalProducts
                       ? dashboardData?.totalProducts
@@ -360,7 +363,7 @@ const Dashboard = ({navigation}) => {
                 <View style={styles.countContainer}>
                   <MaterialCommunityIcons
                     name="cash"
-                    color={colors.white}
+                    color={colors.black}
                     size={30}
                   />
                   <Text style={styles.cardCount}>
@@ -392,18 +395,3 @@ const Dashboard = ({navigation}) => {
 };
 
 export default Dashboard;
-const asdasd = [
-  {
-    collapseKey: 'com.zanny_merchant',
-    data: {type: 'NewOrder'},
-    from: '929084652852',
-    messageId: '0:1736252013470634NaN8892142d8892142',
-    notification: {
-      android: {},
-      body: 'Order Number 302341',
-      title: 'New order arrived',
-    },
-    sentTime: 1736252013463,
-    ttl: 2419200,
-  },
-];

@@ -5,9 +5,33 @@ import Geolocation from 'react-native-geolocation-service';
 import {check, PERMISSIONS, request} from 'react-native-permissions';
 import {constants} from '../constants';
 import {notification} from '../constants/variables';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
 import Sound from 'react-native-sound';
 
 export const helper = {
+  async resizeImageBalanced(image) {
+    try {
+      const resized = await ImageResizer.createResizedImage(
+        image.uri,
+        5200,
+        5200,
+        'JPEG',
+        80, // perfect balance
+        0,
+        undefined,
+        false,
+      );
+
+      return {
+        uri: resized.uri,
+        type: 'image/jpeg',
+        name: `image_${Date.now()}.jpg`,
+      };
+    } catch (error) {
+      console.log('resize error 👉', error);
+      throw error;
+    }
+  },
   async ImageUploadService(imagee) {
     const form = new FormData();
     form.append('file', imagee);

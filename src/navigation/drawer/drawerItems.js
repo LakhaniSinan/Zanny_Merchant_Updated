@@ -32,7 +32,7 @@ const DrawerItem = props => {
           <AntDesign
             style={{marginRight: 10, marginLeft: 10}}
             name="dashboard"
-            color={colors.yellow}
+            color={colors.redish}
             size={22}
           />
         );
@@ -42,7 +42,7 @@ const DrawerItem = props => {
           <Icon
             style={{marginRight: 10, marginLeft: 10}}
             name="food"
-            color={colors.yellow}
+            color={colors.redish}
             size={22}
           />
         );
@@ -51,7 +51,7 @@ const DrawerItem = props => {
           <Foundation
             name="clipboard-notes"
             style={{marginRight: 10, marginLeft: 10}}
-            color={colors.yellow}
+            color={colors.redish}
             size={22}
           />
         );
@@ -60,7 +60,7 @@ const DrawerItem = props => {
           <Foundation
             name="clipboard-notes"
             style={{marginRight: 10, marginLeft: 10}}
-            color={colors.yellow}
+            color={colors.redish}
             size={22}
           />
         );
@@ -70,7 +70,7 @@ const DrawerItem = props => {
           <Foundation
             name="clipboard-notes"
             style={{marginRight: 10, marginLeft: 10}}
-            color={colors.yellow}
+            color={colors.redish}
             size={22}
           />
         );
@@ -79,7 +79,7 @@ const DrawerItem = props => {
           <Foundation
             name="clipboard-notes"
             style={{marginRight: 10, marginLeft: 10}}
-            color={colors.yellow}
+            color={colors.redish}
             size={22}
           />
         );
@@ -88,7 +88,7 @@ const DrawerItem = props => {
           <MaterialIcons
             style={{marginRight: 10, marginLeft: width(3)}}
             name="category"
-            color={colors.yellow}
+            color={colors.redish}
             size={22}
           />
         );
@@ -97,7 +97,7 @@ const DrawerItem = props => {
           <MaterialIcons
             style={{marginRight: 10, marginLeft: width(3)}}
             name="category"
-            color={colors.yellow}
+            color={colors.redish}
             size={22}
           />
         );
@@ -106,7 +106,7 @@ const DrawerItem = props => {
           <IonIcons
             style={{marginRight: 10, marginLeft: width(3)}}
             name="people"
-            color={colors.yellow}
+            color={colors.redish}
             size={22}
           />
         );
@@ -115,7 +115,7 @@ const DrawerItem = props => {
           <AntDesign
             style={{marginRight: 10, marginLeft: width(3)}}
             name="customerservice"
-            color={colors.yellow}
+            color={colors.redish}
             size={22}
           />
         );
@@ -124,7 +124,7 @@ const DrawerItem = props => {
           <MaterialCommunityIcons
             style={{marginRight: 10, marginLeft: width(4)}}
             name="logout"
-            color={colors.yellow}
+            color={colors.redish}
             size={22}
           />
         );
@@ -152,7 +152,9 @@ const DrawerItem = props => {
           alignItems: 'center',
         }}>
         <View style={{width: '20%'}}>{renderIcon()}</View>
-        <Text style={{color: 'black', fontWeight: '600'}}>{title}</Text>
+        <Text style={{color: 'black', fontWeight: '600', color: colors.redish}}>
+          {title}
+        </Text>
       </View>
     </TouchableOpacity>
   );

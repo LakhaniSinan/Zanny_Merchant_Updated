@@ -7,7 +7,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     marginBottom: width(3),
     borderRadius: 10,
-    backgroundColor: colors.yellow,
+    backgroundColor: colors.softgray,
     justifyContent: 'space-between',
     paddingVertical: width(5),
     paddingHorizontal: width(3),
@@ -20,12 +20,12 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontWeight: '600',
-    color: colors.white,
+    color: colors.redish,
     fontSize: 15,
   },
   cardCount: {
     fontWeight: '600',
-    color: colors.white,
+    color: colors.redish,
     fontSize: 15,
   },
 
@@ -39,9 +39,9 @@ const styles = StyleSheet.create({
   dateDisplay: {
     borderWidth: 0.5,
     marginVertical: width(3),
-    borderRadius: 5,
-    marginHorizontal: width(2),
-    padding: 4,
+    borderRadius: 100,
+    paddingHorizontal: width(4),
+    padding: width(3),
     color: colors.gray4,
   },
   dateHeading: {
@@ -51,10 +51,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   submitBtn: {
-    backgroundColor: colors.yellow,
+    backgroundColor: colors.redish,
     width: width(20),
     padding: width(2),
-    borderRadius: 5,
+    borderRadius: 100,
   },
 });
 

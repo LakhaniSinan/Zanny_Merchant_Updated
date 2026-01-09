@@ -22,8 +22,8 @@ function PrivateOrders() {
             headerShown: false,
             tabBarPosition: 'top',
             tabBarHideOnKeyboard: true,
-            tabBarActiveTintColor: colors.yellow,
-            tabBarInactiveTintColor: colors.black,
+            tabBarActiveTintColor: colors.redish,
+            tabBarInactiveTintColor: colors.gray4,
             tabBarStyle: {
               backgroundColor: colors.white,
               // paddingBottom: width(2),
@@ -44,7 +44,7 @@ function PrivateOrders() {
                 return (
                   <Ionicons
                     name="today"
-                    color={focused ? colors.yellow : colors.black}
+                    color={focused ? colors.redish : colors.gray4}
                     size={20}
                   />
                 );
@@ -60,7 +60,7 @@ function PrivateOrders() {
                 return (
                   <MaterialCommunityIcons
                     name="page-previous"
-                    color={focused ? colors.yellow : colors.black}
+                    color={focused ? colors.redish : colors.gray4}
                     size={20}
                   />
                 );

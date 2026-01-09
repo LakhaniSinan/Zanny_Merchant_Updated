@@ -9,7 +9,6 @@ const styles = StyleSheet.create({
 
   imageStyle: {
     height: height(25),
-    width: width(100),
     borderRadius: 1,
   },
   orderheading: {

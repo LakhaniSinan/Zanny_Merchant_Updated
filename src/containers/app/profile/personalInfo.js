@@ -2,18 +2,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useState} from 'react';
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   SafeAreaView,
   ScrollView,
   Switch,
   Text,
   TextInput,
-  View,
   TouchableOpacity,
-  Image,
+  View,
 } from 'react-native';
-import ImagePicker from 'react-native-image-crop-picker';
 import {width} from 'react-native-dimension';
+import ImagePicker from 'react-native-image-crop-picker';
 import Feather from 'react-native-vector-icons/Feather';
 import {useDispatch} from 'react-redux';
 import Button from '../../../components/button';
@@ -39,6 +39,8 @@ const PersonalInfo = ({navigation}) => {
     safetyCertificate: null,
     isPickUp: false,
     pickupTimmings: '',
+    isDelivery: false,
+    deliveryTimmings: '',
     isApprove: false,
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -84,6 +86,7 @@ const PersonalInfo = ({navigation}) => {
           ...inputs,
           ...data,
           pickupTimmings: data?.pickupTimmings?.toString() || '',
+          deliveryTimmings: data?.deliveryTimmings?.toString() || '',
         });
       })
       .catch(err => {
@@ -105,7 +108,9 @@ const PersonalInfo = ({navigation}) => {
       licenseImage: inputs.licenseImage,
       safetyCertificate: inputs.safetyCertificate,
       isPickUp: inputs.isPickUp,
+      isDelivery: inputs.isDelivery,
       pickupTimmings: Number(inputs.pickupTimmings) || 0,
+      deliveryTimmings: Number(inputs.deliveryTimmings) || 0,
       isApprove: inputs.isApprove,
     };
 
@@ -269,6 +274,26 @@ const PersonalInfo = ({navigation}) => {
               renderTextInput(
                 'Pickup Time (minutes)',
                 'pickupTimmings',
+                'numeric',
+              )}
+          </View>
+          <View style={styles.mainacard}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <Text style={styles.textstyle}>Delivery Available</Text>
+              <Switch
+                value={inputs.isDelivery}
+                onValueChange={val => onChangeHandler('isDelivery', val)}
+              />
+            </View>
+            {inputs.isDelivery &&
+              renderTextInput(
+                'Delivery Time (minutes)',
+                'deliveryTimmings',
                 'numeric',
               )}
           </View>

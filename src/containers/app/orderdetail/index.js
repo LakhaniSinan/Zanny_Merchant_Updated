@@ -207,7 +207,9 @@ const OrderDetail = ({navigation, route}) => {
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
       <Header text="Order Details" goBack={true} />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={{paddingHorizontal: width(2)}}>
         <Image
           source={{
             uri: data?.merchantDetails?.merchantImage,

@@ -54,8 +54,8 @@ const PaymentHistory = () => {
           headerShown: false,
           tabBarPosition: 'top',
           tabBarHideOnKeyboard: true,
-          tabBarActiveTintColor: colors.yellow,
-          tabBarInactiveTintColor: colors.black,
+          tabBarActiveTintColor: colors.redish,
+          tabBarInactiveTintColor: colors.gray4,
           tabBarStyle: {
             backgroundColor: colors.white,
             // paddingBottom: width(2),
@@ -74,7 +74,7 @@ const PaymentHistory = () => {
               return (
                 <Ionicons
                   name="fast-food"
-                  color={focused ? colors.yellow : colors.black}
+                  color={focused ? colors.redish : colors.gray4}
                   size={20}
                 />
               );
@@ -90,7 +90,7 @@ const PaymentHistory = () => {
               return (
                 <MaterialCommunityIcons
                   name="food-croissant"
-                  color={focused ? colors.yellow : colors.black}
+                  color={focused ? colors.redish : colors.gray4}
                   size={20}
                 />
               );

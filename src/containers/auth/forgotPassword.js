@@ -5,7 +5,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import {width} from 'react-native-dimension';
 import Button from '../../components/button';
@@ -23,44 +23,54 @@ const ForgotPassword = ({navigation}) => {
   };
 
   const handleOnPressNext = () => {
-    const { email } = inputValues;
-      if (email == '') {
+    const {email} = inputValues;
+    if (email == '') {
       alert('Email is required');
-    }  else {
+    } else {
       let params = {
         email,
       };
-      setIsLoading(true)
+      setIsLoading(true);
       sendResetCodeMerchant(params)
         .then(res => {
           if (res.data.status == 'error') {
-            setIsLoading(false)
+            setIsLoading(false);
             alert(res.data.message);
           } else {
-            setIsLoading(false)
+            setIsLoading(false);
             alert(res.data.message);
-            navigation.navigate('ResetPassword', {email:email});
+            navigation.navigate('ResetPassword', {email: email});
           }
         })
         .catch(err => {
-          setIsLoading(false)
-          console.log(err,"error");
+          setIsLoading(false);
+          console.log(err, 'error');
         });
     }
   };
   return (
     <>
-    <SafeAreaView style={{flex: 1,backgroundColor:colors.white}}>
-        <Header text={'Forgot Password'} goBack={true}/>
-        <View style={{marginTop: width(5)}}>
-          <Text style={{paddingHorizontal: width(2),color:colors.gray4}}>Email</Text>
+      <SafeAreaView style={{flex: 1, backgroundColor: colors.white}}>
+        <Header text={'Forgot Password'} goBack={true} />
+        <View style={{padding: width(3)}}>
+          <Text
+            style={{
+              paddingHorizontal: width(2),
+              color: colors.redish,
+              marginBottom: width(3),
+            }}>
+            Enter Your Email
+          </Text>
           <View
             style={{
-              borderBottomWidth: 0.5,
+              borderWidth: 0.5,
               borderColor: colors.grey,
+              borderRadius: width(100),
+              paddingVertical: width(2),
+              paddingHorizontal: width(3),
             }}>
             <TextInput
-              style={{margin: width(2),color:colors.black}}
+              style={{flex: 1, color: colors.redish}}
               placeholder="Enter your email"
               value={inputValues.email}
               onChangeText={value => handleChangeInputs('email', value)}
@@ -70,10 +80,11 @@ const ForgotPassword = ({navigation}) => {
         </View>
         <View
           style={{justifyContent: 'flex-end', flex: 1, marginBottom: width(1)}}>
-            {isLoading ? <ActivityIndicator size={'large'} color={colors.yellow} /> 
-            :
-          <Button heading={'Next'} onPress={handleOnPressNext} />
-        }
+          {isLoading ? (
+            <ActivityIndicator size={'large'} color={colors.yellow} />
+          ) : (
+            <Button heading={'Next'} onPress={handleOnPressNext} />
+          )}
         </View>
       </SafeAreaView>
     </>

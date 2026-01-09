@@ -12,7 +12,20 @@ import {useDispatch} from 'react-redux';
 import {setUserData} from '../../redux/slices/Login';
 import ToggleSwitch from 'toggle-switch-react-native';
 
-const Header = ({text, goBack, cart, logout, handlePress, drawer,status,handleChangeStatus,online,showProduct,isShow,handleChangeProductStatus}) => {
+const Header = ({
+  text,
+  goBack,
+  cart,
+  logout,
+  handlePress,
+  drawer,
+  status,
+  handleChangeStatus,
+  online,
+  showProduct,
+  isShow,
+  handleChangeProductStatus,
+}) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
@@ -22,83 +35,80 @@ const Header = ({text, goBack, cart, logout, handlePress, drawer,status,handleCh
     dispatch(setUserData(null));
   };
 
-
   return (
-    <View>
-      <View
-        style={{
-          height: 60,
-          justifyContent: 'center',
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: width(3),
-          backgroundColor:colors.orangeColor
-        }}>
-        <View style={{flex: 1, alignItems: 'center'}}>
-          <Text
-            style={{
-              color: colors.white,
-              fontSize: 14,
-              fontWeight: 'bold',
-            }}>
-            {text}
-          </Text>
-        </View>
-        {drawer && (
-          <TouchableOpacity
-            onPress={() => navigation.toggleDrawer()}
-            style={{position: 'absolute', left:width(4)}}>
-            <Octicons name="three-bars" size={22} color="white" />
-          </TouchableOpacity>
-        )}
-        {cart && (
-          <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
-            <FontAwesome name="shopping-cart" size={22} color="white" />
-          </TouchableOpacity>
-        )}
-
-        {goBack && (
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{position: 'absolute', left: width(4)}}>
-            <AntDesign name="arrowleft" size={20} color={colors.white} />
-          </TouchableOpacity>
-        )}
-        {status && (
-          <View style={{marginRight:width(3)}}>
-          <ToggleSwitch
-          isOn={online}
-          onColor={colors.green}
-          offColor="red"
-          size="medium"
-          onToggle={handleChangeStatus}
-        />
-        </View>
-        )}
-         {showProduct && (
-           <View style={{marginRight:width(3)}}>
-          <ToggleSwitch
-          isOn={isShow}
-          onColor={colors.green}
-          offColor="red"
-          size="medium"
-          onToggle={handleChangeProductStatus}
-        />
-        </View>
-        )}
-        {logout && (
-          <TouchableOpacity
-            onPress={logoutUser}
-            style={{position: 'absolute', right: 10}}>
-            <MaterialIcons
-              onPress={handlePress}
-              color={colors.white}
-              name="logout"
-              size={24}
-            />
-          </TouchableOpacity>
-        )}
+    <View
+      style={{
+        height: 60,
+        justifyContent: 'center',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: width(3),
+        backgroundColor: colors.softgray,
+      }}>
+      <View style={{flex: 1, alignItems: 'center'}}>
+        <Text
+          style={{
+            color: colors.redish,
+            fontSize: 14,
+            fontWeight: 'bold',
+          }}>
+          {text}
+        </Text>
       </View>
+      {drawer && (
+        <TouchableOpacity
+          onPress={() => navigation.toggleDrawer()}
+          style={{position: 'absolute', left: width(4)}}>
+          <Octicons name="three-bars" size={22} color={colors.redish} />
+        </TouchableOpacity>
+      )}
+      {cart && (
+        <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
+          <FontAwesome name="shopping-cart" size={22} color="white" />
+        </TouchableOpacity>
+      )}
+
+      {goBack && (
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{position: 'absolute', left: width(4)}}>
+          <AntDesign name="arrowleft" size={20} color={colors.redish} />
+        </TouchableOpacity>
+      )}
+      {status && (
+        <View style={{marginRight: width(3)}}>
+          <ToggleSwitch
+            isOn={online}
+            onColor={colors.green}
+            offColor="red"
+            size="medium"
+            onToggle={handleChangeStatus}
+          />
+        </View>
+      )}
+      {showProduct && (
+        <View style={{marginRight: width(3)}}>
+          <ToggleSwitch
+            isOn={isShow}
+            onColor={colors.green}
+            offColor="red"
+            size="medium"
+            onToggle={handleChangeProductStatus}
+          />
+        </View>
+      )}
+      {logout && (
+        <TouchableOpacity
+          onPress={logoutUser}
+          style={{position: 'absolute', right: 10}}>
+          <MaterialIcons
+            onPress={handlePress}
+            color={colors.white}
+            name="logout"
+            size={24}
+          />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

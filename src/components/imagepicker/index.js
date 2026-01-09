@@ -1,18 +1,16 @@
 import React, {useState} from 'react';
 import {
-  View,
-  StyleSheet,
+  ActivityIndicator,
+  Image,
   Text,
   TouchableOpacity,
-  Image,
-  ActivityIndicator,
+  View,
 } from 'react-native';
-import {width} from 'react-native-dimension';
-import Entypo from 'react-native-vector-icons/Entypo';
-import Styles from './style';
-import {helper} from '../../helper';
-import {colors} from '../../constants/index';
 import ImageCropPicker from 'react-native-image-crop-picker';
+import Entypo from 'react-native-vector-icons/Entypo';
+import {colors} from '../../constants/index';
+import {helper} from '../../helper';
+import Styles from './style';
 
 const ImagePicker = ({
   subtext,
@@ -22,7 +20,6 @@ const ImagePicker = ({
   type,
   imageStyle,
 }) => {
-  const [filePath, setFilePath] = useState(null);
   const [isloading, setIsLoading] = useState(false);
 
   const handleChangeIdImage = async () => {
@@ -40,17 +37,23 @@ const ImagePicker = ({
 
     uploadFunction(params);
   };
-  const uploadFunction = async params => {
+  const uploadFunction = async originalImage => {
     setIsLoading(true);
     try {
-      let imageUrl = await helper.ImageUploadService(params);
+      // 🔥 HARD LIMIT 1MB
+      console.log(originalImage, 'finalImagefinalImagefinalImagefinalImage');
+      const finalImage = await helper.resizeImageBalanced(originalImage);
+
+      const imageUrl = await helper.ImageUploadService(finalImage);
+
       getImage(imageUrl, type);
-      setIsLoading(false);
     } catch (error) {
-      console.log(error, 'errorerrorerror');
+      Alert.alert('Error', 'Image size 1MB se zyada hai');
+    } finally {
       setIsLoading(false);
     }
   };
+
   const CheckImage = () => {
     if (isloading) {
       return (

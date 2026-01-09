@@ -45,7 +45,7 @@ function DrawerContent(props) {
         <View style={styles.drawerContent}>
           <View
             style={{
-              backgroundColor: colors.yellow,
+              backgroundColor: colors.redish,
               padding: 10,
               height: height(25),
               alignItems: 'center',

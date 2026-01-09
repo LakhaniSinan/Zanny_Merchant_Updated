@@ -26,8 +26,8 @@ const TopTab = ({route}) => {
           headerShown: false,
           tabBarPosition: 'top',
           tabBarHideOnKeyboard: true,
-          tabBarActiveTintColor: colors.yellow,
-          tabBarInactiveTintColor: colors.black,
+          tabBarActiveTintColor: colors.redish,
+          tabBarInactiveTintColor: colors.gray4,
           tabBarStyle: {
             backgroundColor: colors.white,
             paddingTop: width(1.5),

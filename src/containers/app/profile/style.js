@@ -5,7 +5,7 @@ import {colors} from '../../../constants/index';
 const styles = StyleSheet.create({
   mainacard: {
     // width:"95%",
-    marginHorizontal: width(4),
+    margin: width(4),
     // shadowOffset: { width: 0, height: 2 },
     // shadowOpacity: 0.25,
     // shadowRadius: 3.84,
@@ -15,26 +15,23 @@ const styles = StyleSheet.create({
     marginVertical: '3%',
     paddingLeft: '2%',
     paddingRight: '2%',
-    
   },
 
   textstyle: {
     color: colors.yellow,
     fontWeight: '500',
     fontSize: 12,
-    paddingBottom:width(2)
-    
+    paddingBottom: width(2),
   },
   textstyledynamic: {
     color: 'black',
     fontWeight: '500',
     fontSize: 14,
-    borderColor:colors.gray4,
-    borderWidth:0.5,
-    paddingHorizontal:width(2),
-    paddingVertical:width(2),
-    borderRadius:8,
-
+    borderColor: colors.gray4,
+    borderWidth: 0.5,
+    paddingHorizontal: width(2),
+    paddingVertical: width(2),
+    borderRadius: 8,
   },
 
   btnview: {
