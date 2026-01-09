@@ -39,13 +39,13 @@ const TermsAndConditions = ({ handleAccepted }) => {
           flexDirection: 'row',
           alignItems: 'center',
           paddingHorizontal: width(3),
-          backgroundColor:colors.orangeColor
+          backgroundColor:colors.softgray
         }}
         >
         <View style={{ flex: 1, alignItems: 'center' }}>
           <Text
             style={{
-              color: colors.white,
+              color: colors.redish,
               fontSize: 16,
               fontWeight: 'bold',
             }}>
