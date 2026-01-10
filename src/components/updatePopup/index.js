@@ -1,20 +1,19 @@
-import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
-import { Linking, Platform, Text, View, Image } from 'react-native';
-import { width } from 'react-native-dimension';
-import { exitApp } from '@logicwind/react-native-exit-app';
+import {exitApp} from '@logicwind/react-native-exit-app';
+import {useNavigation} from '@react-navigation/native';
+import React, {useState} from 'react';
+import {Image, Linking, Platform, Text, View} from 'react-native';
+import {width} from 'react-native-dimension';
 // import FastImage from 'react-native-fast-image';
 import Modal from 'react-native-modal';
-import { fontFamily, icons, images } from '../../assets';
+import {icons} from '../../assets';
 import Button from '../button';
-import { colors } from '../../constants';
 
 let propsData = {};
 
 const UpdatePopUp = React.forwardRef((props, ref) => {
   console.log(ref, 'refrefrefrefrefref');
 
-  const { handleButton } = props;
+  const {handleButton} = props;
   const [isVisible, ModalVisibility] = useState(false);
   const navigation = useNavigation();
 
@@ -30,15 +29,15 @@ const UpdatePopUp = React.forwardRef((props, ref) => {
     },
   }));
 
-
-  let androidURL = 'https://play.google.com/store/apps/details?id=com.zanny_merchant&hl=en_US&pli=1'
-  let iosURL = 'https://apps.apple.com/be/app/zannys-merchant/id1671109483'
+  let androidURL =
+    'https://play.google.com/store/apps/details?id=com.zanny_merchant&hl=en_US&pli=1';
+  let iosURL = 'https://apps.apple.com/be/app/zannys-merchant/id1671109483';
 
   console.log(propsData, 'propsDatapropsDatapropsData');
 
   return (
     <Modal
-      style={{ alignSelf: 'center', alignItems: 'center' }}
+      style={{alignSelf: 'center', alignItems: 'center'}}
       isVisible={isVisible}
       animationIn="slideInLeft"
       animationOut="slideOutRight"
@@ -52,30 +51,20 @@ const UpdatePopUp = React.forwardRef((props, ref) => {
           borderRadius: width(2),
           padding: width(8),
         }}>
-        <View style={{ alignSelf: 'center' }}>
+        <View style={{alignSelf: 'center'}}>
           <Image
             source={icons.zannyLogo}
-            resizeMode='contain'
+            resizeMode="contain"
             style={{
               height: width(25),
               width: width(25),
-              borderRadius: 100,
-              shadowColor: '#000',
-              shadowOffset: {
-                width: 0,
-                height: 2,
-              },
-              shadowOpacity: 0.25,
-              shadowRadius: 3.84,
-              elevation: 5,
             }}
           />
         </View>
         <Text
           style={{
             fontSize: width(4),
-            // fontFamily: fontFamily.PoppinsBold,
-            color: "black",
+            color: 'black',
             textAlign: 'center',
           }}>
           New Features Available!
@@ -83,8 +72,7 @@ const UpdatePopUp = React.forwardRef((props, ref) => {
         <Text
           style={{
             fontSize: width(2.5),
-            // fontFamily: fontFamily.PoppinsBold,
-            color: "black",
+            color: 'black',
             textAlign: 'center',
             marginTop: width(5),
           }}>
@@ -97,18 +85,18 @@ const UpdatePopUp = React.forwardRef((props, ref) => {
             justifyContent: 'space-between',
             marginTop: width(5),
           }}>
-          <View style={{ width: '46%', height: width(16) }}>
+          <View style={{width: '50%'}}>
             <Button
               onPress={() => {
                 ModalVisibility(false);
                 setTimeout(() => {
                   exitApp();
-                }, 1000); // give the modal time to close
+                }, 1000);
               }}
               heading="Cancel"
             />
           </View>
-          <View style={{ width: '46%', height: width(16) }}>
+          <View style={{width: '50%'}}>
             <Button
               heading="Update"
               onPress={() => {
@@ -116,17 +104,6 @@ const UpdatePopUp = React.forwardRef((props, ref) => {
                   ? Linking.openURL(androidURL)
                   : Linking.openURL(iosURL);
               }}
-            // title={'Update'}
-            // btnTextStyle={{
-            //   color: colors.white,
-            // }}
-            // buttonContainer={{
-            //   backgroundColor:colors.yellow,
-            //   borderColor: colors.primaryColor,
-            //   borderWidth: 1,
-            //   borderRadius: 12,
-            //   paddingVertical: width(3),
-            // }}
             />
           </View>
         </View>

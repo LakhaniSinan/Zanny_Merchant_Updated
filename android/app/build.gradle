@@ -84,8 +84,8 @@ android {
         applicationId "com.zanny_merchant"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 12
-        versionName "4.5"
+        versionCode 14
+        versionName "4.7"
     }
     signingConfigs {
         debug {

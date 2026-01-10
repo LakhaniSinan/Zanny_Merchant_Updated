@@ -1,7 +1,7 @@
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import {createDrawerNavigator} from '@react-navigation/drawer';
 import Dashboard from '../../containers/app/dashboard';
-import React, { useEffect, useRef } from 'react';
-import { Platform, useWindowDimensions } from 'react-native';
+import React, {useEffect, useRef} from 'react';
+import {Platform, useWindowDimensions} from 'react-native';
 import DrawerContent from './merchantContent';
 import OrderStack from '../orderStack';
 import ProfileStack from '../profileStack';
@@ -12,7 +12,7 @@ import PrivateOrderStack from '../privateOrderStack';
 import PaymentHistory from '../../containers/app/paymentHistory';
 import AddSupportMsg from '../../containers/app/support/addSupportMsg';
 import UpdatePopUp from '../../components/updatePopup';
-import { getSettings } from '../../services/settings';
+import {getSettings} from '../../services/settings';
 import DeviceInfo from 'react-native-device-info';
 
 const Drawer = createDrawerNavigator();
@@ -25,23 +25,25 @@ function DrawerNavigation(props) {
     callAppVersion();
   }, []);
 
-
   const callAppVersion = async () => {
     try {
-      console.log("CALLDDED");
-      
+      console.log('CALLDDED');
+
       const response = await getSettings();
-      console.log(response, "responseresponseresponse");
+      // console.log(response, 'responseresponseresponse');
 
       let apiRess = response?.data?.data;
-      console.log(apiRess, "apiRessapiRessapiRess");
+      console.log(apiRess, 'apiRessapiRessapiRess');
 
       if (response.status === 200 || response.status === 201) {
         let result = DeviceInfo.getBuildNumber();
-        console.log(result, "resultresultresult");
+        console.log(result, 'resultresultresult');
 
         if (Platform.OS === 'android') {
-          if (Number(result) !== Number(apiRess.android) && apiRess.android_popup) {
+          if (
+            Number(result) !== Number(apiRess.androidMerchantVersion) &&
+            apiRess.isAndroidMerchantPopUpShow
+          ) {
             setTimeout(() => {
               updateVar.current.isVisible();
             }, 5000);
@@ -49,9 +51,12 @@ function DrawerNavigation(props) {
             updateVar.current.backdropPress();
           }
         } else {
-          console.log(result,apiRess,"dasdasdas");
-          
-          if (Number(result) !== Number(apiRess.merchantIOSVersion) && apiRess.merchantIOSPopup) {
+          console.log(result, apiRess, 'dasdasdas');
+
+          if (
+            Number(result) !== Number(apiRess.iosMerchantVersion) &&
+            apiRess.isIosMerchantPopUpShow
+          ) {
             setTimeout(() => {
               updateVar.current.isVisible();
             }, 5000);
@@ -103,7 +108,7 @@ function DrawerNavigation(props) {
             headerShown: false,
           }}
           key="Orders"
-          initialParams={{ type: 'delivery' }}
+          initialParams={{type: 'delivery'}}
         />
         <Drawer.Screen
           name="Delivery Orders"
@@ -112,7 +117,7 @@ function DrawerNavigation(props) {
             headerShown: false,
           }}
           key="Orders"
-          initialParams={{ type: 'delivery' }}
+          initialParams={{type: 'delivery'}}
         />
         <Drawer.Screen
           name="Food Categories"
