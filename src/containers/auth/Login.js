@@ -197,6 +197,7 @@ const Login = ({navigation}) => {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
+            height: width(15),
             paddingHorizontal: width(4),
           }}>
           <View style={{width: '90%'}}>
