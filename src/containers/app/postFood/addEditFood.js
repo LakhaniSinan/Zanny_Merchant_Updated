@@ -623,7 +623,7 @@ const AddEditFood = ({route}) => {
                   paddingHorizontal: width(2),
                   color: colors.black,
                 }}>
-                Discount
+                After Discount Price
               </Text>
               <View
                 style={{

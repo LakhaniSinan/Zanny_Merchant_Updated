@@ -229,7 +229,7 @@ const Login = ({navigation}) => {
         <Text style={{color: colors.gray4}}>Dont't have Account?</Text>
         <TouchableOpacity
           onPress={() => {
-            Linking.openURL('https://zannysfood.com/admin/#/merchant-register');
+            Linking.openURL('https://zannysfood.com/portal/#/merchant-register');
           }}>
           <Text
             style={{
