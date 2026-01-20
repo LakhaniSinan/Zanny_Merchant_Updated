@@ -8,7 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   TurboModuleRegistry,
-  Linking
+  Linking,
 } from 'react-native';
 import {width} from 'react-native-dimension';
 import {useDispatch} from 'react-redux';
@@ -53,7 +53,7 @@ const AccountInformation = ({navigation}) => {
     } else if (accountNumber == '') {
       alert('Account number type is required');
     } else if (swiftCode == '') {
-      alert('Swift code is required');
+      alert('Sort Code is required');
     } else {
       if (isDataAvailable) {
         let data = await AsyncStorage.getItem('user');
@@ -114,10 +114,10 @@ const AccountInformation = ({navigation}) => {
   const handleGetMerchantAccountDetails = async () => {
     let data = await AsyncStorage.getItem('user');
     data = JSON.parse(data);
-    setIsLoading(true)
+    setIsLoading(true);
     getMerchantAccountDetails(data?._id)
       .then(response => {
-        setIsLoading(false)
+        setIsLoading(false);
         // console.log(response?.data?.data,"responseeeeeeeeee");
         if (response?.data?.data !== null) {
           let values = response?.data?.data;
@@ -133,33 +133,34 @@ const AccountInformation = ({navigation}) => {
         }
       })
       .catch(error => {
-        setIsLoading(false)
+        setIsLoading(false);
         console.log(error, 'errorrrrrrrrr');
       });
   };
 
-
-  const handleConnectAccount=async()=>{
+  const handleConnectAccount = async () => {
     let data = await AsyncStorage.getItem('user');
     data = JSON.parse(data);
-    let payload={
-      merchantId:data._id
-    }
-    setIsLoading(true)
-    connectAccount(payload).then(async(res)=>{
-      setIsLoading(false)
-      if (res.status==200) {
-        await navigation.navigate("ConnectAccount",{
-          url:res.data.data
-        })
-      }else{
-        alert(res.data.message)
-      }
-    }).catch((error)=>{
-      setIsLoading(false)
-      console.log(error,"error link accout");
-    })
-  }
+    let payload = {
+      merchantId: data._id,
+    };
+    setIsLoading(true);
+    connectAccount(payload)
+      .then(async res => {
+        setIsLoading(false);
+        if (res.status == 200) {
+          await navigation.navigate('ConnectAccount', {
+            url: res.data.data,
+          });
+        } else {
+          alert(res.data.message);
+        }
+      })
+      .catch(error => {
+        setIsLoading(false);
+        console.log(error, 'error link accout');
+      });
+  };
   return (
     <>
       <OverLayLoader isloading={isloading} />
@@ -189,7 +190,7 @@ const AccountInformation = ({navigation}) => {
               paddingHorizontal: width(2),
               color: colors.gray4,
             }}>
-            Account Title
+            Bank Name *
           </Text>
           <View
             style={{
@@ -199,7 +200,7 @@ const AccountInformation = ({navigation}) => {
             }}>
             <TextInput
               style={{margin: width(2), color: colors.gray4}}
-              placeholder="Enter your bank account title"
+              placeholder="Enter your bank name"
               value={inputValue.accountHolderName}
               onChangeText={newText =>
                 handleChangeText('accountHolderName', newText)
@@ -213,7 +214,7 @@ const AccountInformation = ({navigation}) => {
               paddingHorizontal: width(2),
               color: colors.gray4,
             }}>
-            Account Number
+            Account Number *
           </Text>
           <View
             style={{
@@ -237,7 +238,7 @@ const AccountInformation = ({navigation}) => {
               paddingHorizontal: width(2),
               color: colors.gray4,
             }}>
-            Swift Code
+            Sort Code *
           </Text>
           <View
             style={{
@@ -247,7 +248,7 @@ const AccountInformation = ({navigation}) => {
             }}>
             <TextInput
               style={{margin: width(2), color: colors.gray4}}
-              placeholder="Enter your acount swift code"
+              placeholder="Enter your acount Sort Code"
               value={inputValue.swiftCode}
               onChangeText={newText => handleChangeText('swiftCode', newText)}
               placeholderTextColor={colors.gray4}
@@ -262,14 +263,12 @@ const AccountInformation = ({navigation}) => {
             }
             onPress={onPressAddUpadteAcccount}
           />
-          {isDataAvailable &&
-           <Button
-            heading={
-             'Connect Account With Stripe'
-            }
-            onPress={handleConnectAccount}
-          />
-          }
+          {isDataAvailable && (
+            <Button
+              heading={'Connect Account With Stripe'}
+              onPress={handleConnectAccount}
+            />
+          )}
         </View>
       </SafeAreaView>
     </>
