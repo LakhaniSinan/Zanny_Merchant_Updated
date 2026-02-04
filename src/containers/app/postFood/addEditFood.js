@@ -39,6 +39,8 @@ const AddEditFood = ({route}) => {
   const dispatch = useDispatch();
   const [online, setIsOnline] = useState(true);
   const {type, data, allergiesData} = route.params;
+  console.log(data, 'datadatadatadatadatadatadataasd');
+
   const [userDetails, setUserDetails] = useState({});
   const [isloading, setIsLoading] = useState(false);
   const [allAllergies, setAllAllergies] = useState([]);
@@ -52,6 +54,7 @@ const AddEditFood = ({route}) => {
     name: '',
     price: 0,
     discount: 0,
+    availableFor: 0,
     description: '',
     category: '',
     image: null,
@@ -68,6 +71,7 @@ const AddEditFood = ({route}) => {
         name: data?.name,
         price: data?.price,
         discount: data?.discount ? data?.discount : 0,
+        availableFor: data?.availableFor ? data?.availableFor : 0,
         category: data?.category,
         description: data?.description,
         image: data?.image,
@@ -204,7 +208,8 @@ const AddEditFood = ({route}) => {
         temp.push(item);
       }
     });
-    const {name, price, discount, description, category, image} = inputValue;
+    const {name, price, discount, description, category, image, availableFor} =
+      inputValue;
 
     let catId = allCategories.find(cat => cat.name === category)?._id || null;
 
@@ -216,6 +221,7 @@ const AddEditFood = ({route}) => {
       discount,
       description,
       image,
+      availableFor,
       category,
       merchantId: userDetails._id,
       allergiesData: temp,
@@ -614,6 +620,34 @@ const AddEditFood = ({route}) => {
                   value={`${inputValue.price}`}
                   keyboardType="numeric"
                   onChangeText={newText => handleChangeText('price', newText)}
+                  placeholderTextColor={colors.gray4}
+                />
+              </View>
+              <Text
+                style={{
+                  marginTop: width(2),
+                  paddingHorizontal: width(2),
+                  color: colors.black,
+                }}>
+                Serving Size (People)
+              </Text>
+              <View
+                style={{
+                  borderBottomWidth: 0.8,
+                  borderColor: colors.grey,
+                }}>
+                <TextInput
+                  style={{
+                    marginHorizontal: width(2),
+                    color: colors.black,
+                    marginVertical: width(2),
+                  }}
+                  placeholder="Serving Size"
+                  value={`${inputValue.availableFor}` || 0}
+                  keyboardType="numeric"
+                  onChangeText={newText =>
+                    handleChangeText('availableFor', newText)
+                  }
                   placeholderTextColor={colors.gray4}
                 />
               </View>
