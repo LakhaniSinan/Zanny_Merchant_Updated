@@ -2,6 +2,7 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
   View,
   Text,
+  Image,
   TextInput,
   TouchableOpacity,
   FlatList,
@@ -97,6 +98,8 @@ const ChatScreen = ({navigation, route}) => {
     user?.businessName ||
     user?.merchantName ||
     'Merchant';
+  const senderImage =
+    user?.profileImage || user?.merchantImage || user?.customerImage || '';
 
   const chatId = useMemo(
     () => buildChatId(orderId, customerId, merchantId),
@@ -146,6 +149,7 @@ const ChatScreen = ({navigation, route}) => {
             messageType: data.type || 'text',
             text: data.text || '',
             audioUri: data.audioUri || '',
+            senderImage: data.senderImage || '',
             durationSec: Number(data.durationSec || 0),
             time: createdAtDate.toLocaleTimeString([], {
               hour: '2-digit',
@@ -181,6 +185,7 @@ const ChatScreen = ({navigation, route}) => {
       senderId: currentUserId,
       senderType,
       senderName,
+      senderImage,
       createdAt: now,
     });
     await chatRef.set(
@@ -255,6 +260,7 @@ const ChatScreen = ({navigation, route}) => {
         senderId: currentUserId,
         senderType,
         senderName,
+        senderImage,
         createdAt: now,
       });
       await chatRef.set(
@@ -336,16 +342,57 @@ const ChatScreen = ({navigation, route}) => {
           ]}>
           {item.messageType === 'voice' ? (
             <TouchableOpacity
-              style={styles.voiceRow}
+              style={[
+                styles.voiceContainer,
+                item.type === 'sent'
+                  ? styles.voiceContainerSent
+                  : styles.voiceContainerReceived,
+              ]}
               onPress={() => playVoiceNote(item)}>
-              <Icon
-                name={playingMessageId === item.id ? 'pause' : 'play-arrow'}
-                size={20}
-                color="#111"
-              />
-              <Text style={styles.voiceText}>
-                Voice note {formatDuration(item.durationSec)}
-              </Text>
+              <View
+                style={[
+                  styles.voiceAvatar,
+                  item.type === 'sent' && styles.voiceAvatarSent,
+                ]}>
+                {item?.senderImage ? (
+                  <Image source={{uri: item.senderImage}} style={styles.voiceAvatarImage} />
+                ) : (
+                  <Icon name="person" size={15} color="#fff" />
+                )}
+              </View>
+              <View style={styles.voiceMain}>
+                <View style={styles.voiceTopRow}>
+                  <View style={styles.voicePlayButton}>
+                    <Icon
+                      name={playingMessageId === item.id ? 'pause' : 'play-arrow'}
+                      size={20}
+                      color={item.type === 'sent' ? '#fff' : '#222'}
+                    />
+                  </View>
+                  <View style={styles.waveWrap}>
+                    {Array.from({length: 34}).map((_, index) => (
+                      <View
+                        key={`wave-${item.id}-${index}`}
+                        style={[
+                          styles.waveBar,
+                          {
+                            backgroundColor:
+                              item.type === 'sent'
+                                ? 'rgba(255,255,255,0.85)'
+                                : 'rgba(0,0,0,0.5)',
+                          },
+                          {height: 6 + ((index * 5) % 16)},
+                        ]}
+                      />
+                    ))}
+                  </View>
+                </View>
+                <View style={styles.voiceBottomRow}>
+                  <Text style={styles.voiceDuration}>
+                    {formatDuration(item.durationSec)}
+                  </Text>
+                </View>
+              </View>
             </TouchableOpacity>
           ) : (
             <Text style={styles.messageText}>{item.text}</Text>
@@ -542,8 +589,46 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   recordingText: {color: '#111', fontSize: 14, fontWeight: '500'},
-  voiceRow: {flexDirection: 'row', alignItems: 'center'},
-  voiceText: {marginLeft: 6, color: '#111', fontSize: 14, fontWeight: '500'},
+  voiceContainer: {flexDirection: 'row', alignItems: 'center', minWidth: 240},
+  voiceContainerSent: {flexDirection: 'row-reverse'},
+  voiceContainerReceived: {flexDirection: 'row'},
+  voiceAvatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  voiceAvatarSent: {
+    marginRight: 0,
+    marginLeft: 8,
+  },
+  voiceAvatarImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+  },
+  voiceMain: {flex: 1},
+  voiceTopRow: {flexDirection: 'row', alignItems: 'center'},
+  voicePlayButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0,0,0,0.32)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  waveWrap: {flex: 1, flexDirection: 'row', alignItems: 'center'},
+  waveBar: {
+    width: 2,
+    borderRadius: 2,
+    marginRight: 2,
+  },
+  voiceBottomRow: {marginTop: 4, flexDirection: 'row', justifyContent: 'space-between'},
+  voiceDuration: {fontSize: 12, color: '#222', fontWeight: '500'},
 });
 
 export default ChatScreen;
