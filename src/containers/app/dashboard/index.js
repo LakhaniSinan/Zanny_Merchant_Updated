@@ -103,13 +103,23 @@ const Dashboard = ({navigation}) => {
       unsubscribe = firestore()
         .collection('chats')
         .where('merchantId', '==', localUser._id)
-        .onSnapshot(snapshot => {
-          const uniqueCustomers = new Set();
-          snapshot.docs.forEach(doc => {
-            const chat = doc.data() || {};
-            if (chat?.customerId) uniqueCustomers.add(String(chat.customerId));
+        .onSnapshot(async snapshot => {
+          const unreadChecks = snapshot.docs.map(async doc => {
+            const unreadMessageSnap = await doc.ref
+              .collection('messages')
+              .where('senderType', '==', 'customer')
+              .where('seenAt', '==', null)
+              .limit(1)
+              .get();
+            return unreadMessageSnap.empty ? 0 : 1;
           });
-          setChatUsersCount(uniqueCustomers.size);
+
+          const unreadResults = await Promise.all(unreadChecks);
+          const unreadChatsCount = unreadResults.reduce(
+            (sum, value) => sum + value,
+            0,
+          );
+          setChatUsersCount(unreadChatsCount);
         });
     };
 
@@ -248,6 +258,49 @@ const Dashboard = ({navigation}) => {
         });
     }
   };
+
+  const handlePressChatIcon = async () => {
+    try {
+      let localUser = await AsyncStorage.getItem('user');
+      localUser = localUser ? JSON.parse(localUser) : null;
+
+      if (localUser?._id) {
+        const chatsSnapshot = await firestore()
+          .collection('chats')
+          .where('merchantId', '==', localUser._id)
+          .get();
+
+        const markSeenTasks = [];
+        chatsSnapshot.docs.forEach(doc => {
+          markSeenTasks.push(
+            doc.ref
+              .collection('messages')
+              .where('senderType', '==', 'customer')
+              .where('seenAt', '==', null)
+              .get()
+              .then(snapshot => {
+                const updates = snapshot.docs.map(messageDoc =>
+                  messageDoc.ref.set(
+                    {seenAt: firestore.FieldValue.serverTimestamp()},
+                    {merge: true},
+                  ),
+                );
+                return Promise.allSettled(updates);
+              }),
+          );
+        });
+
+        if (markSeenTasks.length) {
+          await Promise.allSettled(markSeenTasks);
+        }
+      }
+    } catch (error) {
+      console.log(error, 'chat icon read update error');
+    } finally {
+      setChatUsersCount(0);
+      navigation.navigate('MerchantChats');
+    }
+  };
   return (
     <>
       <OverLayLoader isloading={isLoading} />
@@ -260,7 +313,7 @@ const Dashboard = ({navigation}) => {
           handleChangeStatus={handleChangeStatus}
           rightIconName="chatbubbles-outline"
           rightIconBadgeCount={chatUsersCount}
-          onPressRightIcon={() => navigation.navigate('MerchantChats')}
+          onPressRightIcon={handlePressChatIcon}
         />
         <DatePicker
           mode="date"
