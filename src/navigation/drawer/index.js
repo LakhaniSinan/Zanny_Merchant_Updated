@@ -11,6 +11,8 @@ import Faq from '../../containers/app/faq';
 import PrivateOrderStack from '../privateOrderStack';
 import PaymentHistory from '../../containers/app/paymentHistory';
 import AddSupportMsg from '../../containers/app/support/addSupportMsg';
+import ChatList from '../../containers/app/chatList';
+import ChatScreen from '../../containers/app/chat';
 import UpdatePopUp from '../../components/updatePopup';
 import {getSettings} from '../../services/settings';
 import DeviceInfo from 'react-native-device-info';
@@ -159,6 +161,24 @@ function DrawerNavigation(props) {
             headerShown: false,
           }}
           key="support"
+        />
+        <Drawer.Screen
+          name="MerchantChats"
+          component={ChatList}
+          options={{
+            headerShown: false,
+            drawerItemStyle: {display: 'none'},
+          }}
+          key="merchantChats"
+        />
+        <Drawer.Screen
+          name="ChatRoom"
+          component={ChatScreen}
+          options={{
+            headerShown: false,
+            drawerItemStyle: {display: 'none'},
+          }}
+          key="chatRoom"
         />
       </Drawer.Navigator>
     </>

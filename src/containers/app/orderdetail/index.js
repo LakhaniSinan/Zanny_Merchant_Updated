@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import {useSelector} from 'react-redux';
 import {width} from 'react-native-dimension';
 import Button from '../../../components/button';
 import Header from '../../../components/header';
@@ -17,6 +18,7 @@ import styles from './style';
 
 const OrderDetail = ({navigation, route}) => {
   const data = route.params.detail;
+  const user = useSelector(state => state?.LoginSlice?.user);
   console.log(data, 'datadatadatadata');
 
   const [subTotal, setSubTotal] = useState(0);
@@ -391,6 +393,22 @@ const OrderDetail = ({navigation, route}) => {
           </View>
         </View>
       </ScrollView>
+      <View style={{marginBottom: width(1)}}>
+        <Button
+          heading={'Chat with Customer'}
+          color={colors.pinkColor}
+          onPress={() =>
+            navigation.navigate('Chat', {
+              orderId: data?._id,
+              customerId: data?.userId,
+              merchantId: user?._id || data?.merchantId,
+              participantName:
+                data?.userDetails?.name || data?.customerDetails?.name || 'Customer',
+              senderType: 'merchant',
+            })
+          }
+        />
+      </View>
       <View style={{marginBottom: width(1)}}>
         {data.status == 'Pending' ? (
           <Button

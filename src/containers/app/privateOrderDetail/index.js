@@ -14,9 +14,11 @@ import styles from './style';
 import {width} from 'react-native-dimension';
 import OverLayLoader from '../../../components/loader';
 import {updatePrivateOrderStatus} from '../../../services/privateOrder';
+import {useSelector} from 'react-redux';
 
 const OrderDetail = ({navigation, route}) => {
   const data = route.params.detail;
+  const user = useSelector(state => state?.LoginSlice?.user);
   const [subTotal, setSubTotal] = useState(0);
   const [prepareTime, setPrepareTime] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -181,6 +183,22 @@ const OrderDetail = ({navigation, route}) => {
             </View>
           </View>
         </ScrollView>
+        <View style={{marginBottom: width(1)}}>
+          <Button
+            heading={'Chat with Customer'}
+            color={colors.pinkColor}
+            onPress={() =>
+              navigation.navigate('Chat', {
+                orderId: data?._id,
+                customerId: data?.userId,
+                merchantId: user?._id || data?.merchantId,
+                participantName:
+                  data?.userDetails?.name || data?.customerDetails?.name || 'Customer',
+                senderType: 'merchant',
+              })
+            }
+          />
+        </View>
         <View style={{marginBottom: width(1)}}>
           {data.status == 'Pending' ? (
             <Button

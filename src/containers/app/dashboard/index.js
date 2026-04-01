@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
+import firestore from '@react-native-firebase/firestore';
 import moment from 'moment';
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
@@ -51,6 +52,7 @@ const Dashboard = ({navigation}) => {
   const [showPickerStart, setShowPickerStart] = useState(false);
   const [showPickerEnd, setShowPickerEnd] = useState(false);
   const [dashboardData, setDashboardData] = useState([]);
+  const [chatUsersCount, setChatUsersCount] = useState(0);
   console.log(dashboardData, 'dashboardDatadashboardData');
 
   const [startdateOpen, setStartdateOpen] = useState(false);
@@ -88,6 +90,34 @@ const Dashboard = ({navigation}) => {
 
   useEffect(() => {
     handleGetNotification();
+  }, []);
+
+  useEffect(() => {
+    let unsubscribe = null;
+
+    const subscribeToChatCount = async () => {
+      let localUser = await AsyncStorage.getItem('user');
+      localUser = localUser ? JSON.parse(localUser) : null;
+      if (!localUser?._id) return;
+
+      unsubscribe = firestore()
+        .collection('chats')
+        .where('merchantId', '==', localUser._id)
+        .onSnapshot(snapshot => {
+          const uniqueCustomers = new Set();
+          snapshot.docs.forEach(doc => {
+            const chat = doc.data() || {};
+            if (chat?.customerId) uniqueCustomers.add(String(chat.customerId));
+          });
+          setChatUsersCount(uniqueCustomers.size);
+        });
+    };
+
+    subscribeToChatCount();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const getProfile = async () => {
@@ -228,6 +258,9 @@ const Dashboard = ({navigation}) => {
           online={online}
           status
           handleChangeStatus={handleChangeStatus}
+          rightIconName="chatbubbles-outline"
+          rightIconBadgeCount={chatUsersCount}
+          onPressRightIcon={() => navigation.navigate('MerchantChats')}
         />
         <DatePicker
           mode="date"
