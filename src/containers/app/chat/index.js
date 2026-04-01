@@ -84,6 +84,7 @@ const ChatScreen = ({navigation, route}) => {
   const flatListRef = useRef(null);
   const recordingIntervalRef = useRef(null);
   const soundRef = useRef(null);
+  const seenTimeoutRef = useRef(null);
   const user = useSelector(state => state?.LoginSlice?.user);
 
   const currentUserId = useMemo(() => getUserId(user), [user]);
@@ -114,6 +115,7 @@ const ChatScreen = ({navigation, route}) => {
         soundRef.current.stop();
         soundRef.current.release();
       }
+      if (seenTimeoutRef.current) clearTimeout(seenTimeoutRef.current);
       AudioRecord.stop().catch(() => {});
     };
   }, []);
@@ -139,11 +141,20 @@ const ChatScreen = ({navigation, route}) => {
       .collection('messages')
       .orderBy('createdAt', 'asc')
       .onSnapshot(snapshot => {
+        const markDeliveredRefs = [];
+        const markSeenRefs = [];
+
         const next = snapshot.docs.map(doc => {
           const data = doc.data() || {};
           const createdAtDate =
             data.createdAt?.toDate?.() || new Date(data.createdAt || Date.now());
           const isSent = String(data.senderId) === String(currentUserId);
+
+          if (!isSent) {
+            if (!data.deliveredAt) markDeliveredRefs.push(doc.ref);
+            if (!data.seenAt) markSeenRefs.push(doc.ref);
+          }
+
           return {
             id: doc.id,
             messageType: data.type || 'text',
@@ -151,6 +162,11 @@ const ChatScreen = ({navigation, route}) => {
             audioUri: data.audioUri || '',
             senderImage: data.senderImage || '',
             durationSec: Number(data.durationSec || 0),
+            messageStatus: data.seenAt
+              ? 'seen'
+              : data.deliveredAt
+              ? 'delivered'
+              : 'sent',
             time: createdAtDate.toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
@@ -160,6 +176,28 @@ const ChatScreen = ({navigation, route}) => {
           };
         });
         setMessages(next);
+
+        if (markDeliveredRefs.length) {
+          Promise.allSettled(
+            markDeliveredRefs.map(ref =>
+              ref.set(
+                {deliveredAt: firestore.FieldValue.serverTimestamp()},
+                {merge: true},
+              ),
+            ),
+          );
+        }
+
+        if (markSeenRefs.length) {
+          if (seenTimeoutRef.current) clearTimeout(seenTimeoutRef.current);
+          seenTimeoutRef.current = setTimeout(() => {
+            Promise.allSettled(
+              markSeenRefs.map(ref =>
+                ref.set({seenAt: firestore.FieldValue.serverTimestamp()}, {merge: true}),
+              ),
+            );
+          }, 700);
+        }
       });
     return () => unsubscribe();
   }, [
@@ -399,6 +437,14 @@ const ChatScreen = ({navigation, route}) => {
           )}
           <View style={styles.messageFooter}>
             <Text style={styles.messageTime}>{item.time}</Text>
+            {item.type === 'sent' && (
+              <Icon
+                style={styles.tickIcon}
+                name={item.messageStatus === 'sent' ? 'done' : 'done-all'}
+                size={16}
+                color={item.messageStatus === 'seen' ? '#34B7F1' : '#8696a0'}
+              />
+            )}
           </View>
         </View>
       </View>
@@ -546,6 +592,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   messageTime: {fontSize: 11, color: '#8696a0'},
+  tickIcon: {marginLeft: 4},
   inputBar: {
     flexDirection: 'row',
     alignItems: 'center',
