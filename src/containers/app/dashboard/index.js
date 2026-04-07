@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
-import firestore from '@react-native-firebase/firestore';
+import firestore, {serverTimestamp} from '@react-native-firebase/firestore';
 import moment from 'moment';
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
@@ -281,7 +281,7 @@ const Dashboard = ({navigation}) => {
               .then(snapshot => {
                 const updates = snapshot.docs.map(messageDoc =>
                   messageDoc.ref.set(
-                    {seenAt: firestore.FieldValue.serverTimestamp()},
+                    {seenAt: serverTimestamp()},
                     {merge: true},
                   ),
                 );

@@ -14,7 +14,7 @@ import {
   Alert,
 } from 'react-native';
 import {useSelector} from 'react-redux';
-import firestore from '@react-native-firebase/firestore';
+import firestore, {serverTimestamp} from '@react-native-firebase/firestore';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AudioRecord from 'react-native-audio-record';
 import Sound from 'react-native-sound';
@@ -132,7 +132,7 @@ const ChatScreen = ({navigation, route}) => {
         customerName: route?.params?.customerName || route?.params?.participantName || null,
         merchantName: route?.params?.merchantName || senderName,
         participants: [customerId, merchantId].filter(Boolean),
-        updatedAt: firestore.FieldValue.serverTimestamp(),
+        updatedAt: serverTimestamp(),
       },
       {merge: true},
     );
@@ -181,7 +181,7 @@ const ChatScreen = ({navigation, route}) => {
           Promise.allSettled(
             markDeliveredRefs.map(ref =>
               ref.set(
-                {deliveredAt: firestore.FieldValue.serverTimestamp()},
+                {deliveredAt: serverTimestamp()},
                 {merge: true},
               ),
             ),
@@ -193,7 +193,7 @@ const ChatScreen = ({navigation, route}) => {
           seenTimeoutRef.current = setTimeout(() => {
             Promise.allSettled(
               markSeenRefs.map(ref =>
-                ref.set({seenAt: firestore.FieldValue.serverTimestamp()}, {merge: true}),
+                ref.set({seenAt: serverTimestamp()}, {merge: true}),
               ),
             );
           }, 700);
@@ -216,7 +216,7 @@ const ChatScreen = ({navigation, route}) => {
     const trimmed = message.trim();
     if (!trimmed || !chatId || !currentUserId) return;
     const chatRef = firestore().collection('chats').doc(chatId);
-    const now = firestore.FieldValue.serverTimestamp();
+    const now = serverTimestamp();
     await chatRef.collection('messages').add({
       text: trimmed,
       type: 'text',
@@ -290,7 +290,7 @@ const ChatScreen = ({navigation, route}) => {
       }
 
       const chatRef = firestore().collection('chats').doc(chatId);
-      const now = firestore.FieldValue.serverTimestamp();
+      const now = serverTimestamp();
       await chatRef.collection('messages').add({
         type: 'voice',
         audioUri: uploadedUrl,
