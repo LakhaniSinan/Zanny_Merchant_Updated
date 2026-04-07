@@ -8,45 +8,53 @@ import {
   View,
 } from 'react-native';
 import {useSelector} from 'react-redux';
-import firestore from '@react-native-firebase/firestore';
+import database from '@react-native-firebase/database';
 import Header from '../../../components/header';
 import {colors} from '../../../constants';
 
 const getUserId = user =>
   user?._id || user?.id || user?.customerId || user?.merchantId || '';
+const normalizeId = value => {
+  if (!value) return '';
+  if (typeof value === 'string' || typeof value === 'number') return String(value);
+  if (typeof value === 'object') {
+    return String(value?._id || value?.id || value?.customerId || value?.merchantId || '');
+  }
+  return '';
+};
 
 const ChatList = ({navigation}) => {
   const [chatItems, setChatItems] = useState([]);
   const user = useSelector(state => state?.LoginSlice?.user);
-  const currentUserId = useMemo(() => getUserId(user), [user]);
+  const currentUserId = useMemo(() => normalizeId(getUserId(user)), [user]);
 
   useEffect(() => {
     if (!currentUserId) return undefined;
+    const chatsQuery = database()
+      .ref('chats')
+      .orderByChild('merchantId')
+      .equalTo(String(currentUserId));
 
-    const unsubscribe = firestore()
-      .collection('chats')
-      .where('merchantId', '==', currentUserId)
-      .onSnapshot(snapshot => {
-        const nextItems = snapshot.docs
-          .map(doc => {
-            const chat = doc.data() || {};
-            const updatedAt = chat.updatedAt?.toDate?.() || new Date(0);
-            return {
-              id: chat.chatId || doc.id,
-              orderId: chat.orderId || null,
-              customerId: chat.customerId || '',
-              merchantId: chat.merchantId || '',
-              participantName: chat.customerName || 'Customer',
-              lastMessage: chat.lastMessage || 'Start conversation',
-              updatedAt,
-            };
-          })
-          .sort((a, b) => b.updatedAt - a.updatedAt);
+    const onChatsValue = chatsQuery.on('value', snapshot => {
+      const chats = snapshot.val() || {};
+      const nextItems = Object.entries(chats)
+        .map(([chatNodeId, chat]) => {
+          const updatedAt = Number(chat?.updatedAt || 0);
+          return {
+            id: chat?.chatId || chatNodeId,
+            orderId: normalizeId(chat?.orderId) || null,
+            customerId: normalizeId(chat?.customerId),
+            merchantId: normalizeId(chat?.merchantId),
+            participantName: chat?.customerName || 'Customer',
+            lastMessage: chat?.lastMessage || 'Start conversation',
+            updatedAt,
+          };
+        })
+        .sort((a, b) => b.updatedAt - a.updatedAt);
+      setChatItems(nextItems);
+    });
 
-        setChatItems(nextItems);
-      });
-
-    return () => unsubscribe();
+    return () => chatsQuery.off('value', onChatsValue);
   }, [currentUserId]);
 
   return (

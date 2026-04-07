@@ -14,16 +14,27 @@ import {
   Alert,
 } from 'react-native';
 import {useSelector} from 'react-redux';
-import firestore, {serverTimestamp} from '@react-native-firebase/firestore';
+import database from '@react-native-firebase/database';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AudioRecord from 'react-native-audio-record';
 import Sound from 'react-native-sound';
 import axios from 'axios';
 import {colors} from '../../../constants';
+const REALTIME_DB_URL = 'https://zanny-app-10dfa-default-rtdb.firebaseio.com/';
+const getDbPathRef = path => database().refFromURL(`${REALTIME_DB_URL}${path}`);
 
 const getDateKey = date => new Date(date).toISOString().split('T')[0];
 const getUserId = user =>
   user?._id || user?.id || user?.customerId || user?.merchantId || '';
+
+const normalizeId = value => {
+  if (!value) return '';
+  if (typeof value === 'string' || typeof value === 'number') return String(value);
+  if (typeof value === 'object') {
+    return String(value?._id || value?.id || value?.customerId || value?.merchantId || '');
+  }
+  return '';
+};
 
 const formatDate = dateString => {
   const date = new Date(dateString);
@@ -70,8 +81,11 @@ const uploadVoiceNote = async audioUri => {
 };
 
 const buildChatId = (orderId, customerId, merchantId) => {
-  if (orderId) return `order_${orderId}`;
-  const sorted = [String(customerId || ''), String(merchantId || '')].sort();
+  const normalizedOrderId = normalizeId(orderId);
+  const normalizedCustomerId = normalizeId(customerId);
+  const normalizedMerchantId = normalizeId(merchantId);
+  if (normalizedOrderId) return `order_${normalizedOrderId}`;
+  const sorted = [normalizedCustomerId, normalizedMerchantId].sort();
   return `dm_${sorted.join('_')}`;
 };
 
@@ -87,11 +101,11 @@ const ChatScreen = ({navigation, route}) => {
   const seenTimeoutRef = useRef(null);
   const user = useSelector(state => state?.LoginSlice?.user);
 
-  const currentUserId = useMemo(() => getUserId(user), [user]);
+  const currentUserId = useMemo(() => normalizeId(getUserId(user)), [user]);
   const participantName = route?.params?.participantName || 'Customer';
-  const orderId = route?.params?.orderId;
-  const customerId = route?.params?.customerId;
-  const merchantId = route?.params?.merchantId;
+  const orderId = normalizeId(route?.params?.orderId);
+  const customerId = normalizeId(route?.params?.customerId);
+  const merchantId = normalizeId(route?.params?.merchantId);
   const senderType = route?.params?.senderType || 'merchant';
   const senderName =
     user?.name ||
@@ -106,6 +120,20 @@ const ChatScreen = ({navigation, route}) => {
     () => buildChatId(orderId, customerId, merchantId),
     [orderId, customerId, merchantId],
   );
+  const logPrefix = '[MerchantChatRTDB]';
+  const ensureChatMeta = async chatRef => {
+    await chatRef.update({
+      chatId,
+      orderId: orderId || null,
+      customerId: customerId || null,
+      merchantId: merchantId || null,
+      customerName:
+        route?.params?.customerName || route?.params?.participantName || null,
+      merchantName: route?.params?.merchantName || senderName,
+      participants: [customerId, merchantId].filter(Boolean),
+      updatedAt: database.ServerValue.TIMESTAMP,
+    });
+  };
 
   useEffect(() => {
     Sound.setCategory('Playback');
@@ -122,84 +150,84 @@ const ChatScreen = ({navigation, route}) => {
 
   useEffect(() => {
     if (!chatId || !currentUserId) return;
-    const chatRef = firestore().collection('chats').doc(chatId);
-    chatRef.set(
-      {
+    const chatRef = getDbPathRef(`chats/${chatId}`);
+    const messagesRef = chatRef.child('messages');
+    console.log(logPrefix, 'subscribe:start', {
+      chatId,
+      orderId,
+      customerId,
+      merchantId,
+      currentUserId,
+      senderType,
+      dbUrl: REALTIME_DB_URL,
+    });
+    ensureChatMeta(chatRef)
+      .then(() => console.log(logPrefix, 'chatMeta:update:success', {chatId}))
+      .catch(error => console.log(logPrefix, 'chatMeta:update:error', error));
+    const onMessagesValue = messagesRef.orderByChild('createdAt').on('value', snapshot => {
+      const payload = snapshot.val() || {};
+      const entries = Object.entries(payload).sort(
+        (a, b) => Number(a?.[1]?.createdAt || 0) - Number(b?.[1]?.createdAt || 0),
+      );
+      console.log(logPrefix, 'messages:snapshot', {
         chatId,
-        orderId: orderId || null,
-        customerId: customerId || null,
-        merchantId: merchantId || null,
-        customerName: route?.params?.customerName || route?.params?.participantName || null,
-        merchantName: route?.params?.merchantName || senderName,
-        participants: [customerId, merchantId].filter(Boolean),
-        updatedAt: serverTimestamp(),
-      },
-      {merge: true},
-    );
-
-    const unsubscribe = chatRef
-      .collection('messages')
-      .orderBy('createdAt', 'asc')
-      .onSnapshot(snapshot => {
-        const markDeliveredRefs = [];
-        const markSeenRefs = [];
-
-        const next = snapshot.docs.map(doc => {
-          const data = doc.data() || {};
-          const createdAtDate =
-            data.createdAt?.toDate?.() || new Date(data.createdAt || Date.now());
-          const isSent = String(data.senderId) === String(currentUserId);
-
-          if (!isSent) {
-            if (!data.deliveredAt) markDeliveredRefs.push(doc.ref);
-            if (!data.seenAt) markSeenRefs.push(doc.ref);
-          }
-
-          return {
-            id: doc.id,
-            messageType: data.type || 'text',
-            text: data.text || '',
-            audioUri: data.audioUri || '',
-            senderImage: data.senderImage || '',
-            durationSec: Number(data.durationSec || 0),
-            messageStatus: data.seenAt
-              ? 'seen'
-              : data.deliveredAt
-              ? 'delivered'
-              : 'sent',
-            time: createdAtDate.toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            }),
-            date: getDateKey(createdAtDate),
-            type: isSent ? 'sent' : 'received',
-          };
-        });
-        setMessages(next);
-
-        if (markDeliveredRefs.length) {
-          Promise.allSettled(
-            markDeliveredRefs.map(ref =>
-              ref.set(
-                {deliveredAt: serverTimestamp()},
-                {merge: true},
-              ),
-            ),
-          );
-        }
-
-        if (markSeenRefs.length) {
-          if (seenTimeoutRef.current) clearTimeout(seenTimeoutRef.current);
-          seenTimeoutRef.current = setTimeout(() => {
-            Promise.allSettled(
-              markSeenRefs.map(ref =>
-                ref.set({seenAt: serverTimestamp()}, {merge: true}),
-              ),
-            );
-          }, 700);
-        }
+        totalMessages: entries.length,
       });
-    return () => unsubscribe();
+      const updates = {};
+      const seenUpdates = {};
+
+      const next = entries.map(([messageId, data]) => {
+        const createdAtDate = new Date(data?.createdAt || Date.now());
+        const isSent = String(data?.senderId) === String(currentUserId);
+        if (!isSent) {
+          if (!data?.deliveredAt) {
+            updates[`messages/${messageId}/deliveredAt`] = database.ServerValue.TIMESTAMP;
+          }
+          if (!data?.seenAt) {
+            seenUpdates[`messages/${messageId}/seenAt`] = database.ServerValue.TIMESTAMP;
+          }
+        }
+
+        return {
+          id: messageId,
+          messageType: data?.type || 'text',
+          text: data?.text || '',
+          audioUri: data?.audioUri || '',
+          senderImage: data?.senderImage || '',
+          durationSec: Number(data?.durationSec || 0),
+          messageStatus: data?.seenAt ? 'seen' : data?.deliveredAt ? 'delivered' : 'sent',
+          time: createdAtDate.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          date: getDateKey(createdAtDate),
+          type: isSent ? 'sent' : 'received',
+        };
+      });
+      setMessages(next);
+
+      if (Object.keys(updates).length) {
+        chatRef
+          .update(updates)
+          .catch(error => console.log(logPrefix, 'delivered:update:error', error));
+      }
+
+      if (Object.keys(seenUpdates).length) {
+        if (seenTimeoutRef.current) clearTimeout(seenTimeoutRef.current);
+        seenTimeoutRef.current = setTimeout(() => {
+          chatRef
+            .update(seenUpdates)
+            .catch(error => console.log(logPrefix, 'seen:update:error', error));
+        }, 700);
+      }
+    }, error => {
+      console.log(logPrefix, 'messages:listen:error', error);
+    });
+
+    return () => {
+      console.log(logPrefix, 'subscribe:stop', {chatId});
+      messagesRef.off('value', onMessagesValue);
+    };
   }, [
     chatId,
     currentUserId,
@@ -214,28 +242,51 @@ const ChatScreen = ({navigation, route}) => {
 
   const sendTextMessage = async () => {
     const trimmed = message.trim();
-    if (!trimmed || !chatId || !currentUserId) return;
-    const chatRef = firestore().collection('chats').doc(chatId);
-    const now = serverTimestamp();
-    await chatRef.collection('messages').add({
-      text: trimmed,
-      type: 'text',
-      senderId: currentUserId,
-      senderType,
-      senderName,
-      senderImage,
-      createdAt: now,
-    });
-    await chatRef.set(
-      {
+    if (!trimmed || !chatId || !currentUserId) {
+      console.log(logPrefix, 'sendText:blocked', {
+        reason: 'missing-required-data',
+        trimmedLength: trimmed.length,
+        chatId,
+        currentUserId,
+      });
+      return;
+    }
+    try {
+      const chatRef = getDbPathRef(`chats/${chatId}`);
+      await ensureChatMeta(chatRef);
+      console.log(logPrefix, 'sendText:start', {
+        chatId,
+        senderId: currentUserId,
+        senderType,
+        text: trimmed,
+      });
+      const pushResult = await chatRef.child('messages').push({
+        text: trimmed,
+        type: 'text',
+        senderId: String(currentUserId),
+        senderType,
+        senderName,
+        senderImage,
+        createdAt: database.ServerValue.TIMESTAMP,
+      });
+      await chatRef.update({
         lastMessage: trimmed,
         lastMessageSenderId: currentUserId,
         lastMessageSenderType: senderType,
-        updatedAt: now,
-      },
-      {merge: true},
-    );
-    setMessage('');
+        updatedAt: database.ServerValue.TIMESTAMP,
+      });
+      console.log(logPrefix, 'sendText:push:success', {
+        chatId,
+        messageId: pushResult?.key,
+      });
+      setMessage('');
+    } catch (error) {
+      console.log(logPrefix, 'sendText:error', error);
+      Alert.alert(
+        'Message error',
+        error?.message || 'Text message send nahi ho saka.',
+      );
+    }
   };
 
   const requestAudioPermission = async () => {
@@ -289,27 +340,25 @@ const ChatScreen = ({navigation, route}) => {
         return;
       }
 
-      const chatRef = firestore().collection('chats').doc(chatId);
-      const now = serverTimestamp();
-      await chatRef.collection('messages').add({
+      const durationSec = recordingSeconds;
+      const chatRef = getDbPathRef(`chats/${chatId}`);
+      await ensureChatMeta(chatRef);
+      await chatRef.child('messages').push({
         type: 'voice',
         audioUri: uploadedUrl,
-        durationSec: recordingSeconds,
-        senderId: currentUserId,
+        durationSec,
+        senderId: String(currentUserId),
         senderType,
         senderName,
         senderImage,
-        createdAt: now,
+        createdAt: database.ServerValue.TIMESTAMP,
       });
-      await chatRef.set(
-        {
-          lastMessage: 'Voice note',
-          lastMessageSenderId: currentUserId,
-          lastMessageSenderType: senderType,
-          updatedAt: now,
-        },
-        {merge: true},
-      );
+      await chatRef.update({
+        lastMessage: 'Voice note',
+        lastMessageSenderId: currentUserId,
+        lastMessageSenderType: senderType,
+        updatedAt: database.ServerValue.TIMESTAMP,
+      });
       setRecordingSeconds(0);
     } catch (error) {
       Alert.alert('Voice note error', 'Voice note send nahi ho saka.');
