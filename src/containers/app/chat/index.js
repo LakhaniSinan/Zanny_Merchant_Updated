@@ -12,6 +12,7 @@ import {
   Platform,
   PermissionsAndroid,
   Alert,
+  Linking,
 } from 'react-native';
 import {useSelector} from 'react-redux';
 import database from '@react-native-firebase/database';
@@ -19,6 +20,13 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import AudioRecord from 'react-native-audio-record';
 import Sound from 'react-native-sound';
 import axios from 'axios';
+import {
+  check,
+  request,
+  openSettings,
+  PERMISSIONS,
+  RESULTS,
+} from 'react-native-permissions';
 import {colors} from '../../../constants';
 const REALTIME_DB_URL = 'https://zanny-app-10dfa-default-rtdb.firebaseio.com/';
 const getDbPathRef = path => database().refFromURL(`${REALTIME_DB_URL}${path}`);
@@ -58,6 +66,9 @@ const formatDuration = seconds => {
   return `${mins}:${secs}`;
 };
 
+const isValidAudioPath = path =>
+  typeof path === 'string' && path.trim().length > 0;
+
 const uploadVoiceNote = async audioUri => {
   const normalizedUri =
     Platform.OS === 'android' && !String(audioUri).startsWith('file://')
@@ -89,6 +100,24 @@ const buildChatId = (orderId, customerId, merchantId) => {
   return `dm_${sorted.join('_')}`;
 };
 
+const setPlaybackAudioSession = () => {
+  try {
+    // Keep playback audible on iOS (including silent mode) and stable on Android.
+    Sound.setCategory('Playback');
+  } catch (error) {
+    console.log('[MerchantChatRTDB]', 'audioSession:playback:error', error);
+  }
+};
+
+const setRecordingAudioSession = () => {
+  try {
+    // Use record-capable session only while recording to avoid low-volume earpiece routing.
+    Sound.setCategory('PlayAndRecord');
+  } catch (error) {
+    console.log('[MerchantChatRTDB]', 'audioSession:record:error', error);
+  }
+};
+
 const ChatScreen = ({navigation, route}) => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
@@ -97,7 +126,9 @@ const ChatScreen = ({navigation, route}) => {
   const [playingMessageId, setPlayingMessageId] = useState(null);
   const flatListRef = useRef(null);
   const recordingIntervalRef = useRef(null);
+  const recordingSecondsRef = useRef(0);
   const soundRef = useRef(null);
+  const playbackTimeoutRef = useRef(null);
   const seenTimeoutRef = useRef(null);
   const user = useSelector(state => state?.LoginSlice?.user);
 
@@ -121,6 +152,39 @@ const ChatScreen = ({navigation, route}) => {
     [orderId, customerId, merchantId],
   );
   const logPrefix = '[MerchantChatRTDB]';
+  const logVoiceDebug = (event, extra = {}) => {
+    console.log(logPrefix, `voice:${event}`, {
+      platform: Platform.OS,
+      chatId,
+      currentUserId,
+      orderId,
+      customerId,
+      merchantId,
+      senderType,
+      isRecording,
+      ...extra,
+    });
+  };
+  const clearPlaybackTimeout = () => {
+    if (playbackTimeoutRef.current) {
+      clearTimeout(playbackTimeoutRef.current);
+      playbackTimeoutRef.current = null;
+    }
+  };
+  const stopActivePlayback = (reason = 'manual-stop') => {
+    clearPlaybackTimeout();
+    if (soundRef.current) {
+      try {
+        soundRef.current.stop();
+      } catch (error) {
+        logVoiceDebug('playback:stop:error', {reason, errorMessage: error?.message});
+      }
+      soundRef.current.release();
+      soundRef.current = null;
+    }
+    setPlayingMessageId(null);
+    logVoiceDebug('playback:stopped', {reason});
+  };
   const ensureChatMeta = async chatRef => {
     await chatRef.update({
       chatId,
@@ -136,13 +200,11 @@ const ChatScreen = ({navigation, route}) => {
   };
 
   useEffect(() => {
-    Sound.setCategory('Playback');
+    setPlaybackAudioSession();
     return () => {
       if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
-      if (soundRef.current) {
-        soundRef.current.stop();
-        soundRef.current.release();
-      }
+      clearPlaybackTimeout();
+      stopActivePlayback('screen-unmount');
       if (seenTimeoutRef.current) clearTimeout(seenTimeoutRef.current);
       AudioRecord.stop().catch(() => {});
     };
@@ -290,57 +352,134 @@ const ChatScreen = ({navigation, route}) => {
   };
 
   const requestAudioPermission = async () => {
-    if (Platform.OS !== 'android') return true;
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-    );
-    return granted === PermissionsAndroid.RESULTS.GRANTED;
+    if (Platform.OS === 'android') {
+      logVoiceDebug('permission:request:start:android');
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      );
+      logVoiceDebug('permission:request:result:android', {granted});
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    }
+
+    const micPermission = PERMISSIONS.IOS.MICROPHONE;
+    logVoiceDebug('permission:check:start:ios', {micPermission});
+    let status = await check(micPermission);
+    logVoiceDebug('permission:check:result:ios', {status});
+
+    if (status === RESULTS.GRANTED || status === RESULTS.LIMITED) return true;
+
+    if (status === RESULTS.DENIED) {
+      status = await request(micPermission);
+      logVoiceDebug('permission:request:result:ios', {status});
+      return status === RESULTS.GRANTED || status === RESULTS.LIMITED;
+    }
+
+    if (status === RESULTS.BLOCKED) {
+      logVoiceDebug('permission:blocked:ios');
+      Alert.alert(
+        'Microphone permission required',
+        'Please allow microphone access from Settings to send voice notes.',
+        [
+          {text: 'Cancel', style: 'cancel'},
+          {
+            text: 'Open Settings',
+            onPress: () => {
+              openSettings().catch(() => Linking.openSettings());
+            },
+          },
+        ],
+      );
+      return false;
+    }
+
+    return false;
   };
 
   const startRecording = async () => {
     try {
-      if (isRecording || !chatId || !currentUserId) return;
+      logVoiceDebug('start:tap', {
+        hasChatId: Boolean(chatId),
+        hasCurrentUserId: Boolean(currentUserId),
+      });
+      if (isRecording || !chatId || !currentUserId) {
+        logVoiceDebug('start:blocked', {
+          reason: isRecording
+            ? 'already-recording'
+            : !chatId
+            ? 'missing-chat-id'
+            : 'missing-current-user-id',
+        });
+        return;
+      }
       const allowed = await requestAudioPermission();
       if (!allowed) {
+        logVoiceDebug('start:blocked-permission-denied');
         Alert.alert('Permission required', 'Please allow microphone permission.');
         return;
       }
+      const wavFile = `voice-${Date.now()}.wav`;
+      stopActivePlayback('recording-started');
+      setRecordingAudioSession();
       AudioRecord.init({
         sampleRate: 16000,
         channels: 1,
         bitsPerSample: 16,
-        wavFile: `voice-${Date.now()}.wav`,
+        wavFile,
       });
+      logVoiceDebug('start:init:success', {wavFile});
+      recordingSecondsRef.current = 0;
       setRecordingSeconds(0);
       await AudioRecord.start();
+      logVoiceDebug('start:native-start:success');
       setIsRecording(true);
       recordingIntervalRef.current = setInterval(() => {
-        setRecordingSeconds(prev => prev + 1);
+        recordingSecondsRef.current += 1;
+        setRecordingSeconds(recordingSecondsRef.current);
       }, 1000);
     } catch (error) {
+      logVoiceDebug('start:error', {
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        nativeStackIOS: error?.nativeStackIOS,
+        userInfo: error?.userInfo,
+      });
       Alert.alert('Recording error', 'Voice note start nahi ho saka.');
+      setIsRecording(false);
     }
   };
 
   const stopRecording = async shouldSend => {
     try {
-      if (!isRecording) return;
+      logVoiceDebug('stop:tap', {shouldSend});
+      if (!isRecording) {
+        logVoiceDebug('stop:blocked-not-recording');
+        return;
+      }
       if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
       const audioUri = await AudioRecord.stop();
+      logVoiceDebug('stop:native-stop:success', {audioUri});
       setIsRecording(false);
+      setPlaybackAudioSession();
 
-      if (!shouldSend || !audioUri) {
+      if (!shouldSend || !isValidAudioPath(audioUri)) {
+        logVoiceDebug('stop:skip-send', {
+          shouldSend,
+          hasValidAudioPath: isValidAudioPath(audioUri),
+        });
+        recordingSecondsRef.current = 0;
         setRecordingSeconds(0);
         return;
       }
       const uploadedUrl = await uploadVoiceNote(audioUri);
+      logVoiceDebug('stop:upload:result', {uploadedUrl});
       if (!uploadedUrl) {
         Alert.alert('Upload error', 'Voice note upload nahi ho saka.');
+        recordingSecondsRef.current = 0;
         setRecordingSeconds(0);
         return;
       }
 
-      const durationSec = recordingSeconds;
+      const durationSec = recordingSecondsRef.current || recordingSeconds;
       const chatRef = getDbPathRef(`chats/${chatId}`);
       await ensureChatMeta(chatRef);
       await chatRef.child('messages').push({
@@ -353,35 +492,77 @@ const ChatScreen = ({navigation, route}) => {
         senderImage,
         createdAt: database.ServerValue.TIMESTAMP,
       });
+      logVoiceDebug('stop:message-push:success', {durationSec});
       await chatRef.update({
         lastMessage: 'Voice note',
         lastMessageSenderId: currentUserId,
         lastMessageSenderType: senderType,
         updatedAt: database.ServerValue.TIMESTAMP,
       });
+      logVoiceDebug('stop:chat-update:success');
+      recordingSecondsRef.current = 0;
       setRecordingSeconds(0);
+      setPlaybackAudioSession();
     } catch (error) {
+      logVoiceDebug('stop:error', {
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        nativeStackIOS: error?.nativeStackIOS,
+        userInfo: error?.userInfo,
+      });
       Alert.alert('Voice note error', 'Voice note send nahi ho saka.');
+      recordingSecondsRef.current = 0;
       setRecordingSeconds(0);
       setIsRecording(false);
+      setPlaybackAudioSession();
     }
   };
 
   const playVoiceNote = item => {
     if (!item?.audioUri) return;
-    if (soundRef.current) {
-      soundRef.current.stop();
-      soundRef.current.release();
-      soundRef.current = null;
+    if (isRecording) {
+      logVoiceDebug('playback:blocked-recording-active', {messageId: item?.id});
+      return;
     }
+
+    if (playingMessageId === item.id && soundRef.current) {
+      stopActivePlayback('toggle-same-message');
+      return;
+    }
+
+    stopActivePlayback('start-new-message');
+    setPlaybackAudioSession();
     const nextSound = new Sound(item.audioUri, null, error => {
       if (error) {
+        logVoiceDebug('playback:load:error', {
+          messageId: item.id,
+          audioUri: item.audioUri,
+          errorMessage: error?.message,
+        });
         Alert.alert('Playback error', 'Voice note play nahi ho saka.');
         setPlayingMessageId(null);
         return;
       }
       setPlayingMessageId(item.id);
+      nextSound.setVolume(1.0);
+      nextSound.setNumberOfLoops(0);
+      if (Platform.OS === 'android') {
+        nextSound.setSpeakerphoneOn(true);
+      }
+      logVoiceDebug('playback:start', {
+        messageId: item.id,
+        durationSec: nextSound.getDuration(),
+      });
+      const durationMs = Math.max(Math.ceil(nextSound.getDuration() * 1000), 0);
+      clearPlaybackTimeout();
+      if (durationMs > 0) {
+        playbackTimeoutRef.current = setTimeout(() => {
+          stopActivePlayback('duration-timeout');
+        }, durationMs + 700);
+      }
       nextSound.play(() => {
+        clearPlaybackTimeout();
+        logVoiceDebug('playback:completed', {messageId: item.id});
         setPlayingMessageId(null);
         nextSound.release();
         soundRef.current = null;

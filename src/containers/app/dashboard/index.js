@@ -42,6 +42,16 @@ const dummyData = {
   ],
 };
 
+const parseMonthIndex = rawId => {
+  if (rawId === null || rawId === undefined) return null;
+  const raw = String(rawId);
+  const digits = raw.match(/\d+/);
+  if (!digits?.[0]) return null;
+  const month = Number(digits[0]);
+  if (Number.isNaN(month) || month < 1 || month > 12) return null;
+  return month;
+};
+
 const Dashboard = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [online, setIsOnline] = useState(true);
@@ -158,10 +168,12 @@ const Dashboard = ({navigation}) => {
         // console.log(response?.TotalEarning,"respppppppp");
 
         let tempArr = [];
-        response?.chartData?.map((val, ind) => {
+        response?.chartData?.forEach(val => {
+          const monthIndex = parseMonthIndex(val?._id);
+          if (!monthIndex) return;
           tempArr.push({
             numberofbookings: val.numberofbookings,
-            id: val._id.charAt(1),
+            id: monthIndex,
           });
         });
 
